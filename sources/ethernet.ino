@@ -1,35 +1,43 @@
-
-byte Ethernet::buffer[ethernetBufferSize];
+uint8_t Ethernet::buffer[ethernetBufferSize];
 
 void setupEthernet() {
-  Serial.begin(9600);
-  Serial.println(F("\n  --== testDHCP ==--"));
-
-  Serial.print("MAC: ");
+  softSerial.print("MAC: ");
   for (byte i = 0; i < 6; ++i) {
-    Serial.print(ethernetMAC[i], HEX);
+    softSerial.print(ethernetMAC[i], HEX);
     if (i < 5)
-      Serial.print(':');
+      softSerial.print(':');
   }
-  Serial.println();
+  softSerial.println();
 
   if (ether.begin(sizeof Ethernet::buffer, ethernetMAC, ethernetCS) == 0){
-    Serial.println(F("Failed to access Ethernet controller"));
+    softSerial.println(F("Failed to access Ethernet controller"));
   } else {
-    Serial.println(F("Sucessfull access Ethernet controller"));
+    softSerial.println(F("Sucessfull access Ethernet controller"));
   }
 
-  Serial.println(F("Setting up DHCP"));
+  softSerial.println(F("Setting up DHCP"));
   if (!ether.dhcpSetup()) {
-    Serial.println(F("DHCP failed"));
+    softSerial.println(F("DHCP failed"));
   } else {
-    Serial.println(F("DHCP FINISHED"));
+    softSerial.println(F("DHCP successfull"));
   }
 
+  softSerial.println(F("IP: "));
+  printIp(ether.myip);
+  softSerial.println(F("Netmask: "));
+  printIp(ether.netmask);
+  softSerial.println(F("Gateway: "));
+  printIp(ether.gwip);
+  softSerial.println(F("DNS: "));
+  printIp(ether.dnsip);
 
-  ether.printIp("My IP: ", ether.myip);
-  ether.printIp("Netmask: ", ether.netmask);
-  ether.printIp("GW IP: ", ether.gwip);
-  ether.printIp("DNS IP: ", ether.dnsip);
+}
 
+void printIp (const uint8_t *buf) {
+    for (uint8_t i = 0; i < IP_LEN; ++i) {
+        softSerial.print( buf[i], DEC );
+        if (i < 3)
+            softSerial.print('.');
+    }
+    softSerial.println();
 }
