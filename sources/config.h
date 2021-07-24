@@ -5,3 +5,5 @@ constexpr uint16_t ethernetBufferSize = 390; // 340 is minimum for DHCP + 50 jus
 constexpr uint16_t serialBaud = 9600;
 constexpr uint8_t serialSoftwareRx = A2;
 constexpr uint8_t serialSoftwareTx = A3;
+
+constexpr uint16_t ucmaBaud = 9600;
