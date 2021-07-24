@@ -42,7 +42,7 @@ private:
     buf[1] = 0x08; // length
     buf[2] = slave_addr;
     buf[3] = master_addr;
-    buf[4] = 0x01; // cmd
+    buf[4] = 0x01; // read cmd
     
     buf[5] = 0x5d; // data_t::performance
     if (datat==data_t::accumulation)

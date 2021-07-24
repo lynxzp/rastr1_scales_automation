@@ -3,6 +3,7 @@
 #include "config.h"
 #include "serial.h"
 #include "ucma.h"
+#include "ethernet.h"
 
 void setup() {
   setupSerial();
