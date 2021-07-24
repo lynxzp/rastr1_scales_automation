@@ -7,3 +7,5 @@ constexpr uint8_t serialSoftwareRx = A2;
 constexpr uint8_t serialSoftwareTx = A3;
 
 constexpr uint16_t ucmaBaud = 9600;
+constexpr uint32_t ucmaWaitResponseTimeoutMs = 3000;
+constexpr uint8_t ucmaRetries = 3;

@@ -23,9 +23,15 @@ public:
   }
 
   static uint8_t read(uint8_t slave_addr, uint8_t master_addr, data_t datat) {
-    request(slave_addr, master_addr, datat);
-    request(slave_addr, master_addr, datat);
-    return response(10000);
+    uint8_t retries = ucmaRetries;
+    while(retries--) {
+      request(slave_addr, master_addr, datat);
+      request(slave_addr, master_addr, datat);
+      auto resp = response(ucmaWaitResponseTimeoutMs);
+      if (resp>0)
+        return resp;
+    }
+    return -1;
   }
 
 private:
@@ -63,6 +69,8 @@ private:
         pos++;
         if(pos>=10)
         {
+          if (checksum(buf+1,8) != buf[9])
+            return -1;
           return (buf[6]-'0')*100 + (buf[7]-'0')*10 + buf[8]-'0';
         }
         softSerial.print("incoming: ");
