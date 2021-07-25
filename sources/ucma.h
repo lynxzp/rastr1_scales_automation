@@ -8,6 +8,7 @@ public:
   
   static void setup() {
     Serial.begin(ucmaBaud);
+    pinMode(ucmaDErePin,OUTPUT);
   }
   
   static bool available() {
@@ -25,8 +26,10 @@ public:
   static uint8_t read(uint8_t slave_addr, uint8_t master_addr, data_t datat) {
     uint8_t retries = ucmaRetries;
     while(retries--) {
+      digitalWrite(ucmaDErePin,HIGH);
       request(slave_addr, master_addr, datat);
       request(slave_addr, master_addr, datat);
+      digitalWrite(ucmaDErePin,LOW);
       auto resp = response(ucmaWaitResponseTimeoutMs);
       if (resp>0)
         return resp;
@@ -52,8 +55,10 @@ private:
     buf[7] = 0;
     buf[8] = 0;
     buf[9] = checksum(buf+1, 8);
-    while(Serial.available())
-      Serial.read();
+    while(Serial.available()){
+      softSerial.print(F("!read unexpected data:"));
+      softSerial.println(int(Serial.read()));
+    }
     for(uint8_t i=0; i<10; i++) {
       Serial.print((char)buf[i]);
     }
@@ -82,9 +87,8 @@ private:
 
   static uint8_t checksum(uint8_t* buf, int len)
   {
-    int i;
     uint8_t s=0;
-    for (i = 0; i < len; i++) 
+    for (uint8_t i = 0; i < len; i++) 
       s += buf[i];
     return s;
   }

@@ -11,9 +11,15 @@ void setup() {
   setupEthernet();
   ucma::setup();
   softSerial.println(F("  --== setup finished ==--"));
+  softSerial.print(F("  --== start read ucma ==--\n asking address:"));
 }
 
+int addr = 0;
+
 void loop () {
-  ucma::read(1, 0, data_t::performance);
+  softSerial.print(addr);
+  softSerial.print(" ");
+  ucma::read(addr++, 0, data_t::accumulation);
   ether.packetLoop(ether.packetReceive());
+  
 }

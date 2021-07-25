@@ -1,5 +1,14 @@
 uint8_t Ethernet::buffer[ethernetBufferSize];
 
+void printIp (const uint8_t *buf) {
+    for (uint8_t i = 0; i < IP_LEN; ++i) {
+        softSerial.print( buf[i], DEC );
+        if (i < 3)
+            softSerial.print('.');
+    }
+    softSerial.println();
+}
+
 void setupEthernet() {
   softSerial.print("MAC: ");
   for (byte i = 0; i < 6; ++i) {
@@ -31,13 +40,4 @@ void setupEthernet() {
   softSerial.println(F("DNS: "));
   printIp(ether.dnsip);
 
-}
-
-void printIp (const uint8_t *buf) {
-    for (uint8_t i = 0; i < IP_LEN; ++i) {
-        softSerial.print( buf[i], DEC );
-        if (i < 3)
-            softSerial.print('.');
-    }
-    softSerial.println();
 }
