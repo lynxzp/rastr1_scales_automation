@@ -8,18 +8,49 @@
 void setup() {
   setupSerial();
   softSerial.println(F("\n\n  --== setup started ==--"));
-  setupEthernet();
+  //setupEthernet();
   ucma::setup();
   softSerial.println(F("  --== setup finished ==--"));
-  softSerial.print(F("  --== start read ucma ==--\n asking address:"));
+  softSerial.print(F("  --== start read ucma ==--\n"));
 }
 
-int addr = 0;
+void push(uint8_t *buf,uint8_t len) {
+  for(uint8_t i=0;i<len;i++) {
+    Serial.print(char(buf[i]));
+  }
+}
+
+bool serialread() {
+  if(Serial.available()) {
+    softSerial.print("received:");
+    softSerial.println(int(Serial.read()));
+    return true;
+  }
+  return false;
+}
+
+void printbuf(uint8_t* buf, uint8_t len){
+  for(int i=0;i<len;i++) {
+    softSerial.print(int(buf[i]));
+    softSerial.print(",");
+    
+  }
+  softSerial.println("");
+}
 
 void loop () {
-  softSerial.print(addr);
-  softSerial.print(" ");
-  ucma::read(addr++, 0, data_t::accumulation);
-  ether.packetLoop(ether.packetReceive());
-  
+    auto data = ucma::read(2, data_t::accumulation);
+    /*if(data!=-1)*/ {
+      softSerial.print("accumulation:");
+      softSerial.println(data);
+    }
+    delay(500);
+    data = ucma::read(2, data_t::performance);
+    /*if(data!=-1)*/ {
+        softSerial.print("performance:");
+        softSerial.println(data);
+    }
+    delay(5000);
+    softSerial.println();
+//    ether.packetLoop(ether.packetReceive());
 }

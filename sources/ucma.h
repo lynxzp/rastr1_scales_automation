@@ -7,7 +7,7 @@ class ucma {
 public:
   
   static void setup() {
-    Serial.begin(ucmaBaud);
+    Serial.begin(ucmaBaud,SERIAL_8N1);
     pinMode(ucmaDErePin,OUTPUT);
   }
   
@@ -23,23 +23,32 @@ public:
     Serial.write(c);
   }
 
-  static uint8_t read(uint8_t slave_addr, uint8_t master_addr, data_t datat) {
+  static int32_t read(uint8_t slave_addr, data_t datat) {
     uint8_t retries = ucmaRetries;
+    int16_t resp = 0;
     while(retries--) {
       digitalWrite(ucmaDErePin,HIGH);
-      request(slave_addr, master_addr, datat);
-      request(slave_addr, master_addr, datat);
+      request(slave_addr, datat);
+      Serial.flush();
       digitalWrite(ucmaDErePin,LOW);
-      auto resp = response(ucmaWaitResponseTimeoutMs);
+      resp = response(ucmaWaitResponseTimeoutMs);
       if (resp>0)
         return resp;
     }
-    return -1;
+    return resp;
   }
 
 private:
+  static unsigned char crc(unsigned char* buf, int cnt)
+  {
+  int i;
+  unsigned char s=0;
+  for (i = 1; i < cnt; i++) s+=buf[i];
+  if (s>256) s=s-256;
+  return s;
+  }
 
-  static void request(uint8_t slave_addr, uint8_t master_addr, data_t datat) {
+  static void request(uint8_t slave_addr, data_t datat, uint8_t master_addr=1) {
     uint8_t buf[10];
     buf[0] = 0x54; // sync byte
     buf[1] = 0x08; // length
@@ -59,30 +68,55 @@ private:
       softSerial.print(F("!read unexpected data:"));
       softSerial.println(int(Serial.read()));
     }
+//    softSerial.print("0x");
+//    for(uint8_t i=0; i<10; i++) {
+//      char buffer[3]; sprintf (buffer, "%02x", buf[i]);
+//      softSerial.print(buffer);
+//    }
+//    softSerial.print(" ");
     for(uint8_t i=0; i<10; i++) {
-      Serial.print((char)buf[i]);
+      Serial.print(char(buf[i]));
     }
   }
 
-  static int16_t response(unsigned long timeout_ms) {
+  static int32_t response(unsigned long timeout_ms) {
     unsigned long time = millis();
     uint8_t buf[10];
     uint8_t pos = 0;
     while(millis()-time < timeout_ms) {
       if(Serial.available()) {
         buf[pos] = Serial.read();
+        char prbuf[20];
+        sprintf(prbuf, "%02x ", int(buf[pos]));
+        softSerial.print(prbuf);
         pos++;
         if(pos>=10)
         {
-          if (checksum(buf+1,8) != buf[9])
+          auto expc = checksum(buf+1,8);
+          if (expc != buf[9]){
+            softSerial.print("EE Wrong checksum. Expected:");
+            softSerial.print(expc);
+            softSerial.print("  received:");
+            softSerial.println(buf[9]);
             return -1;
-          return (buf[6]-'0')*100 + (buf[7]-'0')*10 + buf[8]-'0';
+          }
+          int32_t result = 0;
+          result += buf[6]/16;
+          result *= 10;
+          result += buf[6]%16;
+          result *= 10;
+          result += buf[7]/16;
+          result *= 10;
+          result += buf[7]%16;
+          result *= 10;
+          result += buf[8]/16;
+          result *= 10;
+          result += buf[8]%16;
+          return result;
         }
-        softSerial.print("incoming: ");
-        softSerial.println(int(buf[pos-1]));
       }
     }
-    return -1;
+    return -2;
   }
 
   static uint8_t checksum(uint8_t* buf, int len)
