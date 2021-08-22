@@ -37,8 +37,24 @@ void printbuf(uint8_t* buf, uint8_t len){
   }
   softSerial.println("");
 }
-
+const uint8_t nums_len = 4;
+uint8_t nums[nums_len] {55,63,68,93};
 void loop () {
+    while(1) {
+        for(int j=0; j<nums_len; j++) {
+            auto data = ucma::read(2, data_t(nums[j]));
+            softSerial.print(nums[j]);
+            softSerial.print(" | ");
+//            softSerial.print(data);
+//            if((data>20000)&&(data<60000)){
+//                softSerial.print(" !");
+//            }
+//            softSerial.println();
+//            delay(100);
+        }
+        softSerial.println();
+        delay(1000);
+    }
     int32_t data = ucma::read(2, data_t::accumulation);
     /*if(data!=-1)*/ {
       softSerial.print("accumulation:");

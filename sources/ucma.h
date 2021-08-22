@@ -1,6 +1,6 @@
 enum class data_t {
-  performance, // Производительность
-  accumulation // Накопление
+  performance=0x5d, // Производительность
+  accumulation=0x60 // Накопление
 };
 
 class ucma {
@@ -55,11 +55,7 @@ private:
     buf[2] = slave_addr;
     buf[3] = master_addr;
     buf[4] = 0x01; // read cmd
-    
-    buf[5] = 0x5d; // data_t::performance
-    if (datat==data_t::accumulation)
-        buf[5] = 0x60;
-        
+    buf[5] = uint8_t(datat);
     buf[6] = 0;
     buf[7] = 0;
     buf[8] = 0;
@@ -86,9 +82,11 @@ private:
     while(millis()-time < timeout_ms) {
       if(Serial.available()) {
         buf[pos] = Serial.read();
-        char prbuf[20];
-        sprintf(prbuf, "%02x ", int(buf[pos]));
-        softSerial.print(prbuf);
+        if((pos>=6)&&(pos<=8)){
+            char prbuf[20];
+            sprintf(prbuf, "%02x ", int(buf[pos]));
+            softSerial.print(prbuf);
+        }
         pos++;
         if(pos>=10)
         {
@@ -100,6 +98,22 @@ private:
             softSerial.println(buf[9]);
             return -1;
           }
+          {
+              char prbuf[10];
+              uint16_t f = uint16_t(buf[6])*256+buf[7];
+              char c=' ';
+              if ((f>25000)&&(f<40000))
+                  c='+';
+              sprintf(prbuf, "% 6u%c ", f, c);
+              softSerial.print(prbuf);
+          }
+          if( (buf[6]/16>=10) ||
+          (buf[6]%16>=10) ||
+          (buf[7]/16>=10) ||
+          (buf[7]%16>=10) ||
+          (buf[8]/16>=10) ||
+          (buf[8]%16>=10))
+              return -3;
           int32_t result = 0;
           result += buf[6]/16;
           result *= 10;
