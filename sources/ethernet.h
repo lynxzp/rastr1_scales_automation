@@ -10,6 +10,7 @@ void printIp (const uint8_t *buf) {
 }
 
 void setupEthernet() {
+    ether.hisport = modbusTcpPort;
   softSerial.print("MAC: ");
   for (byte i = 0; i < 6; ++i) {
     softSerial.print(ethernetMAC[i], HEX);
