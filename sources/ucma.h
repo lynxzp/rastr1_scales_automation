@@ -1,6 +1,9 @@
 enum class data_t {
-  performance=0x5d, // Производительность
-  accumulation=0x60 // Накопление
+    accumulation=0x60, // Накопление
+    performance1=0x5d, // Производительность v1
+    performance2avg=0x3f, // Производительность v2 усреденная
+    performance2instant=0x44, // Производительность v2 мгновенная
+    performance2avgSoft=0x37  // Производительность v2 частично усредененная
 };
 
 class ucma {
@@ -31,7 +34,7 @@ public:
       request(slave_addr, datat);
       Serial.flush();
       digitalWrite(ucmaDErePin,LOW);
-      resp = response(ucmaWaitResponseTimeoutMs);
+      resp = response(ucmaWaitResponseTimeoutMs, datat);
       if (resp>0)
         return resp;
     }
@@ -64,69 +67,61 @@ private:
       softSerial.print(F("!read unexpected data:"));
       softSerial.println(int(Serial.read()));
     }
-//    softSerial.print("0x");
-//    for(uint8_t i=0; i<10; i++) {
-//      char buffer[3]; sprintf (buffer, "%02x", buf[i]);
-//      softSerial.print(buffer);
-//    }
-//    softSerial.print(" ");
     for(uint8_t i=0; i<10; i++) {
       Serial.print(char(buf[i]));
     }
   }
 
-  static int32_t response(unsigned long timeout_ms) {
+  static int32_t response(unsigned long timeout_ms, data_t datat) {
     unsigned long time = millis();
     uint8_t buf[10];
     uint8_t pos = 0;
     while(millis()-time < timeout_ms) {
       if(Serial.available()) {
         buf[pos] = Serial.read();
-        if((pos>=6)&&(pos<=8)){
-            char prbuf[20];
-            sprintf(prbuf, "%02x ", int(buf[pos]));
-            softSerial.print(prbuf);
-        }
         pos++;
         if(pos>=10)
         {
           auto expc = checksum(buf+1,8);
           if (expc != buf[9]){
-            softSerial.print("EE Wrong checksum. Expected:");
-            softSerial.print(expc);
-            softSerial.print("  received:");
-            softSerial.println(buf[9]);
+            // softSerial.print("EE Wrong checksum. Expected:");
+            // softSerial.print(expc);
+            // softSerial.print("  received:");
+            // softSerial.println(buf[9]);
             return -1;
           }
-          {
-              char prbuf[10];
-              uint16_t f = uint16_t(buf[6])*256+buf[7];
-              char c=' ';
-              if ((f>25000)&&(f<40000))
-                  c='+';
-              sprintf(prbuf, "% 6u%c ", f, c);
-              softSerial.print(prbuf);
+
+          switch(datat){
+              case data_t::accumulation: {
+                  if( (buf[6]/16>=10) ||
+                      (buf[6]%16>=10) ||
+                      (buf[7]/16>=10) ||
+                      (buf[7]%16>=10) ||
+                      (buf[8]/16>=10) ||
+                      (buf[8]%16>=10)) {
+                      return -3;
+                  }
+                  int32_t result = 0;
+                  result += buf[6]/16;
+                  result *= 10;
+                  result += buf[6]%16;
+                  result *= 10;
+                  result += buf[7]/16;
+                  result *= 10;
+                  result += buf[7]%16;
+                  result *= 10;
+                  result += buf[8]/16;
+                  result *= 10;
+                  result += buf[8]%16;
+                  return result;
+              }
+              case data_t::performance1:
+              case data_t::performance2avg:
+              case data_t::performance2avgSoft:
+              case data_t::performance2instant: {
+                  return uint16_t(buf[6])*256+buf[7];
+              }
           }
-          if( (buf[6]/16>=10) ||
-          (buf[6]%16>=10) ||
-          (buf[7]/16>=10) ||
-          (buf[7]%16>=10) ||
-          (buf[8]/16>=10) ||
-          (buf[8]%16>=10))
-              return -3;
-          int32_t result = 0;
-          result += buf[6]/16;
-          result *= 10;
-          result += buf[6]%16;
-          result *= 10;
-          result += buf[7]/16;
-          result *= 10;
-          result += buf[7]%16;
-          result *= 10;
-          result += buf[8]/16;
-          result *= 10;
-          result += buf[8]%16;
-          return result;
         }
       }
     }
