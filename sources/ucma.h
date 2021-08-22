@@ -25,7 +25,7 @@ public:
 
   static int32_t read(uint8_t slave_addr, data_t datat) {
     uint8_t retries = ucmaRetries;
-    int16_t resp = 0;
+    int32_t resp = 0;
     while(retries--) {
       digitalWrite(ucmaDErePin,HIGH);
       request(slave_addr, datat);

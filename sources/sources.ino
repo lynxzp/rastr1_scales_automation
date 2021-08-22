@@ -39,7 +39,7 @@ void printbuf(uint8_t* buf, uint8_t len){
 }
 
 void loop () {
-    auto data = ucma::read(2, data_t::accumulation);
+    int32_t data = ucma::read(2, data_t::accumulation);
     /*if(data!=-1)*/ {
       softSerial.print("accumulation:");
       softSerial.println(data);
