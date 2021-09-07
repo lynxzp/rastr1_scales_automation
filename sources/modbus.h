@@ -3,7 +3,8 @@ class Modbus {
         uint16_t transactionIdentifier;
         uint16_t protocolIdentifier;
         uint16_t length;
-        uint16_t unitIdentifier;
+        uint8_t unitIdentifier;
+        uint8_t cmd;
         uint16_t dataAddress;
         uint16_t dataSize;
     };
@@ -14,7 +15,8 @@ class Modbus {
         uint16_t transactionIdentifier;
         uint16_t protocolIdentifier;
         uint16_t length;
-        uint16_t unitIdentifier;
+        uint8_t unitIdentifier;
+        uint8_t cmd;
         uint8_t  dataSize;
         int32_t  data;
     }modbusResponse;
@@ -36,20 +38,13 @@ public:
         return modbusResponse.unitIdentifier;
     }
     bool encodeTCP(char *ptr) {
-        uint8_t len;
-        for(len=0; len<100; len++) {
-            if(ptr[len]==0)break;
+        softSerial.print(F("Incoming TCP:"));
+        for(int i=0; i<12; i++){
+          softSerial.print(ptr[i], HEX);
+          softSerial.print(' ');
         }
-        if(len>=100)
-            return false;
+        softSerial.println();
 
-        softSerial.print(F("Incoming TCP size:"));
-        softSerial.print(len);
-        softSerial.print(F(" data:"));
-        softSerial.println(ptr);
-
-        if(len<sizeof(modbusRequest))
-            return false;
         req = (modbusRequest*)(ptr);
         //if(req->length != 7)
         //    return false;
