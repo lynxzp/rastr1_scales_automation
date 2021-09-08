@@ -11,7 +11,7 @@ class Modbus {
 
     struct modbusRequest* req;
 
-    struct {
+    typedef struct {
         uint16_t transactionIdentifier;
         uint16_t protocolIdentifier;
         uint16_t length;
@@ -19,7 +19,9 @@ class Modbus {
         uint8_t cmd;
         uint8_t  dataSize;
         int32_t  data;
-    }modbusResponse;
+        uint8_t zero_trailler;
+    }modbusResponse_t;
+    modbusResponse_t modbusResponse;
 
 public:
     uint8_t getRequestedDataAddress() {
@@ -28,8 +30,9 @@ public:
     void setData(int32_t data) {
         modbusResponse.data = data;
     }
-    char* getResponseBuf() {
-        return (char*)(&modbusResponse);
+    modbusResponse_t* getResponseBuf() {
+        modbusResponse.zero_trailler = 0;
+        return &modbusResponse;
     }
     uint8_t getResponseSize() {
         return sizeof(modbusResponse);
@@ -38,12 +41,12 @@ public:
         return modbusResponse.unitIdentifier;
     }
     bool encodeTCP(char *ptr) {
-        softSerial.print(F("Incoming TCP:"));
+        /*softSerial.print(F("Incoming TCP:"));
         for(int i=0; i<12; i++){
           softSerial.print(ptr[i], HEX);
           softSerial.print(' ');
         }
-        softSerial.println();
+        softSerial.println();*/
 
         req = (modbusRequest*)(ptr);
         if(req->length != 6)
