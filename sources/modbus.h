@@ -46,8 +46,8 @@ public:
         softSerial.println();
 
         req = (modbusRequest*)(ptr);
-        //if(req->length != 7)
-        //    return false;
+        if(req->length != 6)
+            return false;
         modbusResponse.transactionIdentifier = req->transactionIdentifier;
         modbusResponse.protocolIdentifier =    req->protocolIdentifier;
         modbusResponse.length =                req->length + 1;

@@ -37,10 +37,16 @@ void loop () {
     char buf[10];
     sprintf(buf, "%7ld", data);
     softSerial.println(buf);
+    delay(500);*/
+    
+    /*softSerial.print("accumulation: ");
+    char buf[10];
+    sprintf(buf, "%7ld", data);
+    softSerial.println(buf);
     delay(500);
     data = ucma::read(2, data_t::performance2avg);
     softSerial.print("performance:  ");
-    char buf[10];
+    //char buf[10];
     sprintf(buf, "%5d.", data/10);
     softSerial.print(buf);
     softSerial.println(data%10);
@@ -74,7 +80,15 @@ void loop () {
   if (pos){
     char* incomingData = (char *) Ethernet::buffer + pos;
     if(modbus.encodeTCP(incomingData)){
-      ether.httpServerReply(homePage()); // send web page data
+      auto uintId = modbus.getUnitIdentifier();
+      softSerial.println(uintId);
+      auto dataAddr = modbus.getRequestedDataAddress();
+      softSerial.println(dataAddr);
+      auto data = ucma::read(uintId, (data_t)(dataAddr));
+      softSerial.print(F("read: "));
+      softSerial.println(data);
+      modbus.setData(data);
+      ether.httpServerReply(homePage());
     }
   }
 
