@@ -1,18 +1,23 @@
 package main
 
 import (
+	"bufio"
+	"collector/pkg/webui"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"log"
 	"net"
+	"os"
 	"time"
 )
-import "fmt"
-import "bufio"
-import "os"
+
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	webui.StartWeb()
+
+	webui.OpenBrowser("http://127.0.0.1:8080")
 	startClient("192.168.1.12:502")
 	startClient("127.0.0.1:5030")
 }
@@ -56,7 +61,7 @@ func read(reader io.Reader) {
 func periodicRequest(writer io.Writer) {
 	for {
 		go request(writer)
-		<-time.After(1000 * time.Second)
+		<-time.After(10 * time.Second)
 	}
 }
 
