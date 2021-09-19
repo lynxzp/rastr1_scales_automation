@@ -17,7 +17,7 @@ func main() {
 	time.Sleep(1*time.Second)
 	webui.OpenBrowser("http://127.0.0.1:8080")
 	u1 := ucma.Ucma{}
-	u1.Start("192.168.1.12","502", 1*time.Millisecond)
+	u1.Start("192.168.1.12","502", 10000*time.Millisecond)
 	for {
 
 	}

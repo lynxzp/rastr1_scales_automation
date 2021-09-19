@@ -72,19 +72,19 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid URL path", http.StatusBadRequest)
 		return
 	}
-	http.ServeFile(w, r, "internal/webui/www/"+r.URL.Path)
+	http.ServeFile(w, r, "pkg/webui/www/"+r.URL.Path)
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		serveFile(w, r)
-		return
-	}
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "internal/webui/www/index.html")
+	if r.URL.Path != "/" {
+		serveFile(w, r)
+		return
+	}
+	http.ServeFile(w, r, "pkg/webui/www/index.html")
 }
 
 // StartWeb running webserver and handle pages.
