@@ -20,15 +20,21 @@ function update() {
 
 function ajaxRequest() {
     httpRequest = new XMLHttpRequest();
-
     if (!httpRequest) {
         alert('Giving up :( Cannot create an XMLHTTP instance');
         return false;
     }
+    httpRequest.timeout = 2000
+    httpRequest.ontimeout = function (e) {
+        document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером"
+    }
     httpRequest.onreadystatechange = ajaxUpdate;
+
     let params = "?"
-    for(let i=0;i<1;i++) {
-        let id = "dtype"+i
+    let separator = ""
+    for(let i=0;i<nums;i++) {
+        let id = separator+"dtype"+i
+        separator = "&"
         params += id + "=" + document.getElementById("dtype0").getElementsByTagName("input")[0].value.slice(2,4)
         id = "ipaddr"+i
         params += "&" + id + "=" + document.getElementById(id).getElementsByTagName("input")[0].value

@@ -2,33 +2,39 @@ package ucma
 
 import (
 	"encoding/binary"
-	"fmt"
+	"encoding/json"
 	"io"
 	"log"
 	"net"
+	"sync/atomic"
 	"time"
 )
 
+const ScalsesNums = 1
+
 type Ucma struct {
-	conn         net.Conn
-	ip           string
-	port         string
-	rs485addr    uint8
-	data         int
-	requestDelay time.Duration
+	conn         net.Conn		`json:"-"`
+	IP           string			`json:"-"`
+	Port         string			`json:"-"`
+	Rs485addr    uint8			`json:"-"`
+	DType        uint16			`json:"-"`
+	Data		 int32		    `json:"data"`
+	Ready        bool   		`json:"ready"`
+	RequestDelay time.Duration
 }
 
-func (ucma *Ucma) Start(ip string, port string, requestDelay time.Duration) {
-	ucma.ip = ip
-	ucma.port = port
-	ucma.requestDelay = requestDelay
+func (ucma *Ucma) Start(requestDelay time.Duration) {
+	ucma.RequestDelay = requestDelay
+	ucma.Port = "502"
 	go ucma.read()
 }
 
-func (ucma *Ucma) read() {
+func (ucma *Ucma) Read(c chan) int32 {
 	for {
-		ucma.request()
-		<-time.After(ucma.requestDelay)
+		if ucma.Ready == true {
+			ucma.request()
+		}
+		<-time.After(ucma.RequestDelay)
 	}
 }
 
@@ -37,17 +43,22 @@ func (ucma *Ucma) connect() (err error) {
 }
 
 func (ucma *Ucma) request() {
-	ucma.conn, _ = net.Dial("tcp", ucma.ip+":"+ucma.port)
+	var err error
+	ucma.conn, err = net.Dial("tcp", ucma.IP+":"+ucma.Port)
+	if err!=nil {
+		log.Println("Can't connect to ", ucma.IP, ucma.Port)
+		return
+	}
 	// request
 	foo := modbusRequest{501,
 		0,
 		6,
-		2,
+		ucma.Rs485addr,
 		4,
-		0x60,
+		ucma.DType,
 		2,
 	}
-	err := binary.Write(ucma.conn, binary.LittleEndian, foo)
+	err = binary.Write(ucma.conn, binary.LittleEndian, foo)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,12 +66,21 @@ func (ucma *Ucma) request() {
 	// response
 	bytes := make([]byte, 64)
 	for {
-		n, err := ucma.conn.Read(bytes)
+		n, conErr := ucma.conn.Read(bytes)
 		if n != 0 {
-			fmt.Printf("%v\n%q\n", bytes[:n], bytes[:n])
-			// todo: decode and write to data variable
+			type response struct {
+				Transaction uint32
+				Unit		uint8
+				Data		int32
+			}
+			var resp response
+			jErr := json.Unmarshal(bytes[:n], &resp)
+			if jErr!= nil {log.Println("wrong scales response: ", jErr)}
+			//ucma.Data = resp.Data
+			atomic.StoreInt32(&ucma.Data, resp.Data)
+			log.Println(ucma.Data)
 		}
-		if err == io.EOF {
+		if conErr == io.EOF {
 			break
 		}
 	}

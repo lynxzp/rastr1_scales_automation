@@ -4,21 +4,25 @@ import (
 	"collector/pkg/ucma"
 	"collector/pkg/webui"
 	"log"
+	"sync/atomic"
 	"time"
 )
+
+var Scales [ucma.ScalsesNums]ucma.Ucma
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	inChan := make(chan []byte)
-	outChan := make(chan []byte)
-	go webui.StartWeb(cfg.webui, inChan, outChan)
+	go webui.StartWeb(cfg.webui, &Scales)
 
 	time.Sleep(1 * time.Second)
 	webui.OpenBrowser("http://127.0.0.1:8080")
-	u1 := ucma.Ucma{}
-	u1.Start("192.168.1.12", "502", 10000*time.Millisecond)
+	requestDelay := 1000*time.Millisecond
+	for _, sc := range Scales {
+		sc.Start(requestDelay)
+	}
 	for {
-
+		log.Println(atomic.LoadInt32(&Scales[0].Data))
+		<-time.After(requestDelay)
 	}
 }
