@@ -33,9 +33,10 @@ function ajaxRequest() {
     let params = "?"
     let separator = ""
     for(let i=0;i<nums;i++) {
-        let id = separator+"dtype"+i
+        params += separator
         separator = "&"
-        params += id + "=" + document.getElementById("dtype0").getElementsByTagName("input")[0].value.slice(2,4)
+        let id = "dtype"+i
+        params += id + "=" + document.getElementById(id).getElementsByTagName("input")[0].value.slice(2,4)
         id = "ipaddr"+i
         params += "&" + id + "=" + document.getElementById(id).getElementsByTagName("input")[0].value
         id = "rs485addr"+i
@@ -48,11 +49,15 @@ function ajaxRequest() {
 function ajaxUpdate() {
     if (httpRequest.readyState === XMLHttpRequest.DONE) {
         if (httpRequest.status === 200) {
-            document.getElementsByTagName("footer")[0].innerText=httpRequest.responseText
+            document.getElementsByTagName("footer")[0].innerText=""
             let params = JSON.parse(httpRequest.responseText)
             for(let i=0;i<nums;i++){
                 if(params[i].ready === true) {
-                    document.getElementById("data" + i).innerText = params[i].data
+                    let data = params[i].data
+                    let t = params[i].dtype
+                    if((t===0x3f)||(t===0x44)||(t===0x37)||(t===0x5d)) // all performance types
+                        data = params[i].data/10
+                    document.getElementById("data" + i).innerText = data
                 } else {
                     document.getElementById("data" + i).innerText = "-"
                 }

@@ -17,7 +17,7 @@ type Ucma struct {
 	IP           string			`json:"-"`
 	Port         string			`json:"-"`
 	Rs485addr    uint8			`json:"-"`
-	DType        uint16			`json:"-"`
+	DType        uint16			`json:"dtype"`
 	Data		 int32		    `json:"data"`
 	Ready        bool   		`json:"ready"`
 	RequestDelay time.Duration	`json:"-"`
