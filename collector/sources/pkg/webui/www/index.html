@@ -5,19 +5,25 @@
     <title>Collector</title>
 </head>
 <body>
-    <div class="control">
+    <div class="rows">
         <div><button type="button">+ Добавить весы</button></div>
+        <div>Название</div>
+        <div>Значение</div>
+        <div>Тип данных</div>
         <div>IP адресс</div>
         <div>RS-485 адресс</div>
-        <div>Адресс данных</div>
-        <div>Значение</div>
-        <div>Название</div>
-    </div>
-    <div class="row">
         <div><button type="button">– Удалить весы&nbsp;</button></div>
-        <div>sdfdsdff</div>
-        <div>sdfdsdff</div>
-        <div>sdfdsdff</div>
+        <div><input type="text" maxlength="25" size="25"></div>
+        <div>2</div>
+        <div class="dropdown">
+            <input type="text" />
+            <select  onchange="this.previousElementSibling.value=this.value; this.previousElementSibling.focus()">
+                <option>This is option 1</option>
+                <option>Optieeeeeeeeeesdfdfdfdfon 2</option>
+            </select>
+        </div>
+        <div><input type="text" minlength="7" maxlength="15" size="15" pattern="^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$"></div>
+        <div><input type="text" minlength="1" maxlength="3" size="3" pattern="^\d{1,3}$"></div>
     </div>
     <div class="row"></div>
     <div class="row"></div>
