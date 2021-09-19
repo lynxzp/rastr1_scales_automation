@@ -79,7 +79,9 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 
 func ajax_update(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < ucma.ScalsesNums; i++ {
+		scales[i].Mu.Lock()
 		scales[i].Ready = false
+		scales[i].Mu.Unlock()
 
 		dtype, ok := r.URL.Query()["dtype"+strconv.Itoa(i)]
 		if !ok {
@@ -89,13 +91,17 @@ func ajax_update(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			continue
 		}
+		scales[i].Mu.Lock()
 		scales[i].DType = uint16(val)
+		scales[i].Mu.Unlock()
 
 		ipaddr, ok := r.URL.Query()["ipaddr"+strconv.Itoa(i)]
 		if !ok || len(ipaddr[0]) < 7 {
 			continue
 		}
+		scales[i].Mu.Lock()
 		scales[i].IP = ipaddr[0]
+		scales[i].Mu.Unlock()
 
 		rs485addr, ok := r.URL.Query()["rs485addr"+strconv.Itoa(i)]
 		if !ok || len(rs485addr[0]) < 1 {
@@ -105,14 +111,21 @@ func ajax_update(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			continue
 		}
+		scales[i].Mu.Lock()
 		scales[i].Rs485addr = uint8(val)
 
 		scales[i].Ready = true
+		scales[i].Mu.Unlock()
 	}
 
 	// response
-	log.Println(scales[0].Data)
+	for i := range scales {
+		scales[i].Mu.Lock()
+	}
 	js, err := json.Marshal(scales)
+	for i := range scales {
+		scales[i].Mu.Unlock()
+	}
 	if err != nil {
 		log.Println(err)
 	}
@@ -139,7 +152,5 @@ func StartWeb(config_ Config, sc *[ucma.ScalsesNums]ucma.Ucma) {
 	scales = sc
 	config = config_
 	http.HandleFunc("/", serveHome)
-	log.Println(config.ListenIP)
-	log.Println(config.ListenPort)
 	log.Fatal(http.ListenAndServe(config.ListenIP+":"+config.ListenPort, nil))
 }

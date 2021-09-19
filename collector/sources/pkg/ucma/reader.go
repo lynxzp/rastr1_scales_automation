@@ -6,11 +6,11 @@ import (
 	"io"
 	"log"
 	"net"
-	"sync/atomic"
+	"sync"
 	"time"
 )
 
-const ScalsesNums = 1
+const ScalsesNums = 15
 
 type Ucma struct {
 	conn         net.Conn		`json:"-"`
@@ -20,19 +20,26 @@ type Ucma struct {
 	DType        uint16			`json:"-"`
 	Data		 int32		    `json:"data"`
 	Ready        bool   		`json:"ready"`
-	RequestDelay time.Duration
+	RequestDelay time.Duration	`json:"-"`
+	Mu 			 sync.Mutex		`json:"-"`
 }
 
 func (ucma *Ucma) Start(requestDelay time.Duration) {
+	ucma.Mu.Lock()
 	ucma.RequestDelay = requestDelay
 	ucma.Port = "502"
+	ucma.Mu.Unlock()
 	go ucma.read()
 }
 
-func (ucma *Ucma) Read(c chan) int32 {
+func (ucma *Ucma) read() {
 	for {
+		ucma.Mu.Lock()
 		if ucma.Ready == true {
+			ucma.Mu.Unlock()
 			ucma.request()
+		} else {
+		ucma.Mu.Unlock()
 		}
 		<-time.After(ucma.RequestDelay)
 	}
@@ -44,12 +51,15 @@ func (ucma *Ucma) connect() (err error) {
 
 func (ucma *Ucma) request() {
 	var err error
+	ucma.Mu.Lock()
 	ucma.conn, err = net.Dial("tcp", ucma.IP+":"+ucma.Port)
+	ucma.Mu.Unlock()
 	if err!=nil {
 		log.Println("Can't connect to ", ucma.IP, ucma.Port)
 		return
 	}
 	// request
+	ucma.Mu.Lock()
 	foo := modbusRequest{501,
 		0,
 		6,
@@ -59,6 +69,7 @@ func (ucma *Ucma) request() {
 		2,
 	}
 	err = binary.Write(ucma.conn, binary.LittleEndian, foo)
+	ucma.Mu.Unlock()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,7 +77,9 @@ func (ucma *Ucma) request() {
 	// response
 	bytes := make([]byte, 64)
 	for {
+		ucma.Mu.Lock()
 		n, conErr := ucma.conn.Read(bytes)
+		ucma.Mu.Unlock()
 		if n != 0 {
 			type response struct {
 				Transaction uint32
@@ -76,9 +89,9 @@ func (ucma *Ucma) request() {
 			var resp response
 			jErr := json.Unmarshal(bytes[:n], &resp)
 			if jErr!= nil {log.Println("wrong scales response: ", jErr)}
-			//ucma.Data = resp.Data
-			atomic.StoreInt32(&ucma.Data, resp.Data)
-			log.Println(ucma.Data)
+			ucma.Mu.Lock()
+			ucma.Data = resp.Data
+			ucma.Mu.Unlock()
 		}
 		if conErr == io.EOF {
 			break

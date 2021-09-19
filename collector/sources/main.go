@@ -4,7 +4,6 @@ import (
 	"collector/pkg/ucma"
 	"collector/pkg/webui"
 	"log"
-	"sync/atomic"
 	"time"
 )
 
@@ -18,11 +17,10 @@ func main() {
 	time.Sleep(1 * time.Second)
 	webui.OpenBrowser("http://127.0.0.1:8080")
 	requestDelay := 1000*time.Millisecond
-	for _, sc := range Scales {
-		sc.Start(requestDelay)
+	for i := range Scales {
+		Scales[i].Start(requestDelay)
 	}
 	for {
-		log.Println(atomic.LoadInt32(&Scales[0].Data))
 		<-time.After(requestDelay)
 	}
 }
