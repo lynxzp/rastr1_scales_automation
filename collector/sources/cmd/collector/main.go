@@ -7,6 +7,18 @@ import (
 	"time"
 )
 
+type config struct {
+	webui webui.Config
+}
+
+var cfg config
+
+func init() {
+	cfg.webui.ListenIP = "0.0.0.0"
+	cfg.webui.ListenPort = "8080"
+
+}
+
 var Scales [ucma.ScalsesNums]ucma.Ucma
 
 func main() {
