@@ -6,41 +6,36 @@ import (
 	"io"
 	"log"
 	"net"
-	"sync"
 	"time"
 )
 
-const ScalsesNums = 15
+const (
+	ScalsesNums   = 15
+	DataAccumAddr = 0x60
+)
 
 type Ucma struct {
-	conn         net.Conn		`json:"-"`
-	IP           string			`json:"-"`
-	Port         string			`json:"-"`
-	Rs485addr    uint8			`json:"-"`
-	DType        uint16			`json:"dtype"`
-	Data		 int32		    `json:"data"`
-	Ready        bool   		`json:"ready"`
-	RequestDelay time.Duration	`json:"-"`
-	Mu 			 sync.Mutex		`json:"-"`
+	conn           net.Conn      `json:"-"`
+	IP             string        `json:"-"`
+	Port           string        `json:"-"`
+	Rs485addr      uint8         `json:"-"`
+	DataPerfAddr   uint16        `json:"-"`
+	DataPerfValue  int32         `json:"DataPerfValue"`
+	DataAccumValue int32         `json:"DataAccumValue"`
+	Requests       int32         `json:"requests"`
+	Responses      int32         `json:"responses"`
+	RequestDelay   time.Duration `json:"-"`
 }
 
 func (ucma *Ucma) Start(requestDelay time.Duration) {
-	ucma.Mu.Lock()
 	ucma.RequestDelay = requestDelay
 	ucma.Port = "502"
-	ucma.Mu.Unlock()
 	go ucma.read()
 }
 
 func (ucma *Ucma) read() {
 	for {
-		ucma.Mu.Lock()
-		if ucma.Ready == true {
-			ucma.Mu.Unlock()
-			ucma.request()
-		} else {
-		ucma.Mu.Unlock()
-		}
+		ucma.request()
 		<-time.After(ucma.RequestDelay)
 	}
 }
@@ -50,53 +45,84 @@ func (ucma *Ucma) connect() (err error) {
 }
 
 func (ucma *Ucma) request() {
+	/*********************
+	simulation:
+	 */
+	ucma.DataAccumValue = 123
+	ucma.DataPerfValue = 345
+
+	if len(ucma.IP) == 0 {
+		return
+	}
+	if ucma.Rs485addr == 0 {
+		return
+	}
+	if ucma.DataPerfAddr == 0 {
+		return
+	}
 	var err error
-	ucma.Mu.Lock()
 	ucma.conn, err = net.Dial("tcp", ucma.IP+":"+ucma.Port)
-	ucma.Mu.Unlock()
-	if err!=nil {
+	if err != nil {
 		log.Println("Can't connect to ", ucma.IP, ucma.Port)
 		return
 	}
+	defer func() {
+		ucma.conn.Close()
+	}()
+
+	ucma.Requests++
+	data := ucma.modbusRequest(ucma.DataPerfAddr)
+	if data > 0 {
+		ucma.Responses++
+		ucma.DataPerfValue = data
+	}
+
+	ucma.Requests++
+	data = ucma.modbusRequest(DataAccumAddr)
+	if data > 0 {
+		ucma.Responses++
+		ucma.DataAccumValue = data
+	}
+}
+
+func (ucma *Ucma) modbusRequest(addr uint16) int32 {
 	// request
-	ucma.Mu.Lock()
 	foo := modbusRequest{501,
 		0,
 		6,
 		ucma.Rs485addr,
 		4,
-		ucma.DType,
+		addr,
 		2,
 	}
-	err = binary.Write(ucma.conn, binary.LittleEndian, foo)
-	ucma.Mu.Unlock()
+	err := binary.Write(ucma.conn, binary.LittleEndian, foo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	var data int32
 	// response
 	bytes := make([]byte, 64)
 	for {
-		ucma.Mu.Lock()
 		n, conErr := ucma.conn.Read(bytes)
-		ucma.Mu.Unlock()
 		if n != 0 {
 			type response struct {
 				Transaction uint32
-				Unit		uint8
-				Data		int32
+				Unit        uint8
+				Data        int32
 			}
 			var resp response
 			jErr := json.Unmarshal(bytes[:n], &resp)
-			if jErr!= nil {log.Println("wrong scales response: ", jErr)}
-			ucma.Mu.Lock()
-			ucma.Data = resp.Data
-			ucma.Mu.Unlock()
+			if jErr != nil {
+				log.Println("wrong scales response: ", jErr)
+			}
+			data = resp.Data
 		}
 		if conErr == io.EOF {
 			break
 		}
 	}
+	return data
 }
 
 type modbusRequest struct {

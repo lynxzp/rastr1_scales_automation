@@ -28,7 +28,7 @@ func main() {
 
 	time.Sleep(1 * time.Second)
 	webui.OpenBrowser("http://127.0.0.1:8080")
-	requestDelay := 1000*time.Millisecond
+	requestDelay := 1000 * time.Millisecond
 	for i := range Scales {
 		Scales[i].Start(requestDelay)
 	}

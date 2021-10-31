@@ -79,29 +79,21 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 
 func ajax_update(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < ucma.ScalsesNums; i++ {
-		scales[i].Mu.Lock()
-		scales[i].Ready = false
-		scales[i].Mu.Unlock()
-
-		dtype, ok := r.URL.Query()["dtype"+strconv.Itoa(i)]
+		dataPerfAddr, ok := r.URL.Query()["dtype"+strconv.Itoa(i)]
 		if !ok {
 			continue
 		}
-		val, err := strconv.ParseUint(dtype[0], 16, 8)
+		val, err := strconv.ParseUint(dataPerfAddr[0], 16, 8)
 		if err != nil {
 			continue
 		}
-		scales[i].Mu.Lock()
-		scales[i].DType = uint16(val)
-		scales[i].Mu.Unlock()
+		scales[i].DataPerfAddr = uint16(val)
 
 		ipaddr, ok := r.URL.Query()["ipaddr"+strconv.Itoa(i)]
 		if !ok || len(ipaddr[0]) < 7 {
 			continue
 		}
-		scales[i].Mu.Lock()
 		scales[i].IP = ipaddr[0]
-		scales[i].Mu.Unlock()
 
 		rs485addr, ok := r.URL.Query()["rs485addr"+strconv.Itoa(i)]
 		if !ok || len(rs485addr[0]) < 1 {
@@ -111,21 +103,11 @@ func ajax_update(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			continue
 		}
-		scales[i].Mu.Lock()
 		scales[i].Rs485addr = uint8(val)
-
-		scales[i].Ready = true
-		scales[i].Mu.Unlock()
 	}
 
 	// response
-	for i := range scales {
-		scales[i].Mu.Lock()
-	}
 	js, err := json.Marshal(scales)
-	for i := range scales {
-		scales[i].Mu.Unlock()
-	}
 	if err != nil {
 		log.Println(err)
 	}

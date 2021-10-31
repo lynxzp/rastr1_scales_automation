@@ -26,7 +26,7 @@ function ajaxRequest() {
     }
     httpRequest.timeout = 2000
     httpRequest.ontimeout = function (e) {
-        document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером"
+        document.getElementsByTagName("footer")[0].innerText="Таймаут соединения с сервером"
     }
     httpRequest.onreadystatechange = ajaxUpdate;
 
@@ -51,19 +51,19 @@ function ajaxUpdate() {
         if (httpRequest.status === 200) {
             document.getElementsByTagName("footer")[0].innerText=""
             let params = JSON.parse(httpRequest.responseText)
+            console.log(params)
             for(let i=0;i<nums;i++){
-                if(params[i].ready === true) {
-                    let data = params[i].data
+                let DataPerfValue = params[i].DataPerfValue / 10
+                let DataAccumValue = params[i].DataAccumValue
+                if((DataPerfValue>0)&&(DataAccumValue>0)) {
                     let t = params[i].dtype
-                    if((t===0x3f)||(t===0x44)||(t===0x37)||(t===0x5d)) // all performance types
-                        data = params[i].data/10
-                    document.getElementById("data" + i).innerText = data
-                } else {
-                    document.getElementById("data" + i).innerText = "-"
+                    document.getElementById("DataAccumValue" + i).innerText = DataAccumValue
+                    document.getElementById("DataPerfValue" + i).innerText = DataPerfValue
                 }
             }
         } else {
-            document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером"
+            document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером (статус: " +
+                httpRequest.status + ")"
         }
     }
 }
@@ -74,9 +74,14 @@ function addrow(i) {
     d.setAttribute('id', 'name'+i)
     d.innerHTML = "<input type=\"text\" maxlength=\"25\" size=\"25\">"
     rows.appendChild(d)
-    // value
+    // DataAccumValue
     d = document.createElement("div");
-    d.setAttribute('id', 'data'+i)
+    d.setAttribute('id', 'DataAccumValue'+i)
+    d.innerHTML = "-2"
+    rows.appendChild(d)
+    // DataPerfValue
+    d = document.createElement("div");
+    d.setAttribute('id', 'DataPerfValue'+i)
     d.innerHTML = "-2"
     rows.appendChild(d)
     // type
