@@ -45,12 +45,6 @@ func (ucma *Ucma) connect() (err error) {
 }
 
 func (ucma *Ucma) request() {
-	/*********************
-	simulation:
-	 */
-	ucma.DataAccumValue = 123
-	ucma.DataPerfValue = 345
-
 	if len(ucma.IP) == 0 {
 		return
 	}

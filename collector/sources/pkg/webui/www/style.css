@@ -3,8 +3,19 @@ div {
 }
 .rows {
     display: grid;
-    grid-template-columns: max-content max-content max-content max-content max-content max-content;
+    grid-template-columns: max-content max-content max-content max-content max-content max-content max-content max-content;
     background: gainsboro;
+}
+.table {
+    grid-column-start: 1;
+    grid-column-end: 9;
+}
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin: 5px;
+    padding: 5px;
+    background: antiquewhite;
 }
 button{
     font-family: monospace;

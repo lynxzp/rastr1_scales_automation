@@ -1,7 +1,7 @@
-window.setInterval(update,2000)
+window.setInterval(update,200)
 
 let rows
-const nums = 15
+const nums = 10
 
 window.onload = function () {
     rows = document.getElementsByClassName("rows")[0]
@@ -59,6 +59,8 @@ function ajaxUpdate() {
                     let t = params[i].dtype
                     document.getElementById("DataAccumValue" + i).innerText = DataAccumValue
                     document.getElementById("DataPerfValue" + i).innerText = DataPerfValue
+                    document.getElementById("requests" + i).innerText = params[i].requests
+                    document.getElementById("responses" + i).innerText = params[i].responses
                 }
             }
         } else {
@@ -72,7 +74,7 @@ function addrow(i) {
     // name
     let d = document.createElement("div");
     d.setAttribute('id', 'name'+i)
-    d.innerHTML = "<input type=\"text\" maxlength=\"25\" size=\"25\">"
+    d.innerHTML = "<input type='text' maxlength='25' size='25' value='ДЦ-"+(i+1)+"'>"
     rows.appendChild(d)
     // DataAccumValue
     d = document.createElement("div");
@@ -106,4 +108,28 @@ function addrow(i) {
     d.setAttribute('id', 'rs485addr'+i)
     d.innerHTML = "<input type=\"text\" minlength=\"1\" maxlength=\"3\" size=\"3\" pattern=\"^\\d{1,3}$\">"
     rows.appendChild(d)
+    // Requests
+    d = document.createElement("div");
+    d.setAttribute('id', 'requests'+i)
+    d.innerHTML = "-2"
+    rows.appendChild(d)
+    // Responses
+    d = document.createElement("div");
+    d.setAttribute('id', 'responses'+i)
+    d.innerHTML = "-2"
+    rows.appendChild(d)
+    // Table
+    d = document.createElement("div");
+    d.setAttribute('id', 'table'+i)
+    d.setAttribute('class', 'table')
+    d.innerHTML = tableHtml
+    rows.appendChild(d)
 }
+
+const tableHtml = "<table><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='6'>Количество продукции</th></tr>" +
+    "<tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th></tr>" +
+    "<tr><td>-</td><td>20x40</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
+    "<tr><td>-</td><td>5x10</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
+    "<tr><td>-</td><td>10x20</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
+    "<tr><td>-</td><td>отсев</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
+    "</tbody></table>"
