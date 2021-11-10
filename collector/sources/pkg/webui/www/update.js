@@ -55,13 +55,14 @@ function ajaxUpdate() {
             for(let i=0;i<nums;i++){
                 let DataPerfValue = params[i].DataPerfValue / 10
                 let DataAccumValue = params[i].DataAccumValue
-                if((DataPerfValue>0)&&(DataAccumValue>0)) {
-                    let t = params[i].dtype
-                    document.getElementById("DataAccumValue" + i).innerText = DataAccumValue
+                if(DataPerfValue>=0) {
                     document.getElementById("DataPerfValue" + i).innerText = DataPerfValue
-                    document.getElementById("requests" + i).innerText = params[i].requests
-                    document.getElementById("responses" + i).innerText = params[i].responses
                 }
+                if(DataAccumValue>=0) {
+                    document.getElementById("DataAccumValue" + i).innerText = DataAccumValue
+                }
+                document.getElementById("requests" + i).innerText = params[i].requests
+                document.getElementById("responses" + i).innerText = params[i].responses
             }
         } else {
             document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером (статус: " +
@@ -93,7 +94,7 @@ function addrow(i) {
     d.innerHTML = "<input type=\"text\" />\n" +
                   "<select  onchange=\"this.previousElementSibling.value=this.value; this.previousElementSibling.focus()\">\n" +
                   "<option>0x?? Свое значение</option>\n" +
-                  "<option>0x60 Накопление</option>\n" +
+                  // "<option>0x60 Накопление</option>\n" +
                   "<option>0x5d Производительность v2</option>\n" +
                   "<option>0x3f Производительность v1</option>\n" +
                   "</select>\n"

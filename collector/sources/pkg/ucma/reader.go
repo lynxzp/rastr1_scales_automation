@@ -45,6 +45,12 @@ func (ucma *Ucma) connect() (err error) {
 }
 
 func (ucma *Ucma) request() {
+	ucma.requestProxy(ucma.DataPerfAddr, &ucma.DataPerfValue)
+	ucma.requestProxy(DataAccumAddr, &ucma.DataAccumValue)
+}
+
+func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
+	ucma.Requests++
 	if len(ucma.IP) == 0 {
 		return
 	}
@@ -64,19 +70,12 @@ func (ucma *Ucma) request() {
 		ucma.conn.Close()
 	}()
 
-	ucma.Requests++
-	data := ucma.modbusRequest(ucma.DataPerfAddr)
-	if data > 0 {
+	data := ucma.modbusRequest(addr)
+	if data >= 0 {
 		ucma.Responses++
-		ucma.DataPerfValue = data
+		*dataP = data
 	}
 
-	ucma.Requests++
-	data = ucma.modbusRequest(DataAccumAddr)
-	if data > 0 {
-		ucma.Responses++
-		ucma.DataAccumValue = data
-	}
 }
 
 func (ucma *Ucma) modbusRequest(addr uint16) int32 {
