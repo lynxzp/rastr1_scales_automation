@@ -6,18 +6,61 @@
     <title>Collector</title>
 </head>
 <body>
-    <div class="rows">
-        <div>Название</div>
-        <div>Накопление</div>
-        <div>Производительность</div>
-        <div>Адрес производ.</div>
-        <div>IP адресс</div>
-        <div>RS-485 адрес</div>
-        <div>К-во запросов</div>
-        <div>К-во ответов</div>
+    <div class="tab">
+        <button class="tablinks" onclick="selectTab('vesi')">Весы</button>
+        <button class="tablinks" onclick="selectTab('tseha')">Цеха</button>
+        <button class="tablinks" onclick="selectTab('users')">Пользователи</button>
+        <button class="tablinks" onclick="selectTab('logs')">Журнал</button>
     </div>
-    <div class="row"></div>
-    <div class="row"></div>
+
+    <div id="vesi" class="tabcontent">
+        <div class="rows">
+            <div>Название</div>
+            <div>Фракция</div>
+            <div>Накопление</div>
+            <div>Производительность</div>
+            <div>Адрес производ.</div>
+            <div>IP адресс</div>
+            <div>RS-485 адрес</div>
+            <div>К-во запросов</div>
+            <div>К-во ответов</div>
+        </div>
+    </div>
+
+    <div id="tseha" class="tabcontent">
+        <p><h3>ДЦ-1</h3></p>
+        <table id="tseh1"><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='6'>Количество продукции</th></tr>
+        <tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th></tr>
+        <tr><td>ЛК-6</td><td>      0*40</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-6</td><td>      0*70</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-6</td><td>     20*40</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-6</td><td>     20*70</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-7</td><td>      5*10</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-8</td><td>     10*20</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-8</td><td>      5*20</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-9</td><td>песок(0-5)</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        </tbody></table>
+        <p><h3>ДЦ-2</h3></p>
+        <table id="tseh2"><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='6'>Количество продукции</th></tr>
+        <tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th></tr>
+        <tr><td>ЛК-14</td><td>      5*10</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-15</td><td>     10*20</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-17</td><td>      5*20</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        <tr><td>ЛК-4 </td><td>песок(0*5)</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+        </tbody></table>
+    </div>
+
+    <div id="users" class="tabcontent">
+        <h3>На данный момент пользователей нет, все могут изменить все</h3>
+    </div>
+
+    <div id="logs" class="tabcontent">
+        <h3>Журнал работы весов</h3>
+        <div></div>
+        <h3>Журнал смены фракции</h3>
+        <div></div>
+    </div>
+
 <footer></footer>
 </body>
 </html>

@@ -1,20 +1,15 @@
-window.setInterval(update,200)
+// window.setInterval(update,200)
 
 let rows
-const nums = 10
+let names=[['ЛК-4', 'песок(0*5)'], ['ЛК-6', '0*40', '0*70', '20*40', '20*70'], ['ЛК-7', '5*10'], ['ЛК-8', '10*20', '5*20'],
+    ['ЛК-9', 'песок(0-5)'], ['ЛК-14', '5*10'], ['ЛК-15', '10*20'], ['ЛК-17', '5*20']]
 
 window.onload = function () {
     rows = document.getElementsByClassName("rows")[0]
-    for(let i=0;i<nums;i++) {
-        addrow(i)
-    }
+    names.forEach((element, index) => {addrow(element, index)})
 }
 
 function update() {
-    let a = ""
-    for(let i=0;i<nums;i++) {
-
-    }
     ajaxRequest()
 }
 
@@ -32,7 +27,7 @@ function ajaxRequest() {
 
     let params = "?"
     let separator = ""
-    for(let i=0;i<nums;i++) {
+    for(let i=0;i<names.length;i++) {
         params += separator
         separator = "&"
         let id = "dtype"+i
@@ -52,7 +47,7 @@ function ajaxUpdate() {
             document.getElementsByTagName("footer")[0].innerText=""
             let params = JSON.parse(httpRequest.responseText)
             console.log(params)
-            for(let i=0;i<nums;i++){
+            for(let i=0;i<names.length;i++){
                 let DataPerfValue = params[i].DataPerfValue / 10
                 let DataAccumValue = params[i].DataAccumValue
                 if(DataPerfValue>=0) {
@@ -71,33 +66,44 @@ function ajaxUpdate() {
     }
 }
 
-function addrow(i) {
+function addrow(name, i) {
     // name
     let d = document.createElement("div");
     d.setAttribute('id', 'name'+i)
-    d.innerHTML = "<input type='text' maxlength='25' size='25' value='ДЦ-"+(i+1)+"'>"
+    d.innerHTML = "<input type='text' maxlength='10' size='1' value='"+name[0]+"'>"
     rows.appendChild(d)
+    // fraction
+    d = document.createElement("div");
+    d.setAttribute('id', 'fraction'+i)
+    d.className+='dropdown'
+    let fractions = name.slice(1, name.length)
+    let fractions_select = ''
+    fractions.forEach((fr) => {fractions_select+='<option>'+fr+'</option>'})
+    d.innerHTML = "<input type='text'>" +
+        "<select onchange='this.previousElementSibling.value=this.value; this.previousElementSibling.focus()' autofocus='true'>" +
+        fractions_select + fractions[0] +
+        "</select>\n"
+    d.value=fractions[0]
+    rows.appendChild(d)
+    document.getElementById('fraction'+i).getElementsByTagName("input")[0].value=fractions[0]
     // DataAccumValue
     d = document.createElement("div");
     d.setAttribute('id', 'DataAccumValue'+i)
-    d.innerHTML = "-2"
     rows.appendChild(d)
     // DataPerfValue
     d = document.createElement("div");
     d.setAttribute('id', 'DataPerfValue'+i)
-    d.innerHTML = "-2"
     rows.appendChild(d)
     // type
     d = document.createElement("div");
     d.setAttribute('id', 'dtype'+i)
     d.className+='dropdown'
-    d.innerHTML = "<input type=\"text\" />\n" +
-                  "<select  onchange=\"this.previousElementSibling.value=this.value; this.previousElementSibling.focus()\">\n" +
-                  "<option>0x?? Свое значение</option>\n" +
-                  // "<option>0x60 Накопление</option>\n" +
-                  "<option>0x5d Производительность v2</option>\n" +
-                  "<option>0x3f Производительность v1</option>\n" +
-                  "</select>\n"
+    d.innerHTML = "<input type='text' />" +
+                  "<select  onchange='this.previousElementSibling.value=this.value; this.previousElementSibling.focus()'>" +
+                  "<option>0x?? Свое значение</option>" +
+                  "<option>0x5d Производительность v2</option>" +
+                  "<option>0x3f Производительность v1</option>" + "sdsdsd" +
+                  "</select>"
     rows.appendChild(d)
     // ip address
     d = document.createElement("div");
@@ -106,31 +112,36 @@ function addrow(i) {
     rows.appendChild(d)
     // rs-485 address
     d = document.createElement("div");
-    d.setAttribute('id', 'rs485addr'+i)
+    d.setAttribute('id', 'rs485adErrordr'+i)
     d.innerHTML = "<input type=\"text\" minlength=\"1\" maxlength=\"3\" size=\"3\" pattern=\"^\\d{1,3}$\">"
     rows.appendChild(d)
     // Requests
     d = document.createElement("div");
     d.setAttribute('id', 'requests'+i)
-    d.innerHTML = "-2"
     rows.appendChild(d)
     // Responses
     d = document.createElement("div");
     d.setAttribute('id', 'responses'+i)
-    d.innerHTML = "-2"
-    rows.appendChild(d)
-    // Table
-    d = document.createElement("div");
-    d.setAttribute('id', 'table'+i)
-    d.setAttribute('class', 'table')
-    d.innerHTML = tableHtml
     rows.appendChild(d)
 }
 
-const tableHtml = "<table><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='6'>Количество продукции</th></tr>" +
-    "<tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th></tr>" +
-    "<tr><td>-</td><td>20x40</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
-    "<tr><td>-</td><td>5x10</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
-    "<tr><td>-</td><td>10x20</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
-    "<tr><td>-</td><td>отсев</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>" +
-    "</tbody></table>"
+function selectTab(tabName) {
+    // Declare all variables
+    let i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    event.currentTarget.className += " active";
+}

@@ -50,7 +50,6 @@ func (ucma *Ucma) request() {
 }
 
 func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
-	ucma.Requests++
 	if len(ucma.IP) == 0 {
 		return
 	}
@@ -60,6 +59,7 @@ func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
 	if ucma.DataPerfAddr == 0 {
 		return
 	}
+	ucma.Requests++
 	var err error
 	ucma.conn, err = net.Dial("tcp", ucma.IP+":"+ucma.Port)
 	if err != nil {
