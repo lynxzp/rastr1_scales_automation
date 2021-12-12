@@ -1,33 +1,23 @@
 package main
 
 import (
+	"collector/pkg/config"
 	"collector/pkg/ucma"
 	"collector/pkg/webui"
 	"log"
+	"strconv"
 	"time"
 )
 
-type config struct {
-	webui webui.Config
-}
-
-var cfg config
-
-func init() {
-	cfg.webui.ListenIP = "0.0.0.0"
-	cfg.webui.ListenPort = "8080"
-
-}
-
-var Scales [ucma.ScalsesNums]ucma.Ucma
+var Scales [config.ScalesNums]ucma.Ucma
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	go webui.StartWeb(cfg.webui, &Scales)
+	go webui.StartWeb(&Scales)
 
 	time.Sleep(1 * time.Second)
-	webui.OpenBrowser("http://127.0.0.1:8080")
+	webui.OpenBrowser("http://" + config.ListenIP + ":" + strconv.Itoa(config.ListenPort))
 	requestDelay := 1000 * time.Millisecond
 	for i := range Scales {
 		Scales[i].Start(requestDelay)

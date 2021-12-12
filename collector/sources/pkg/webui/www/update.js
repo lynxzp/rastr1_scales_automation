@@ -1,4 +1,4 @@
-window.setInterval(update,200)
+window.setInterval(update,1000)
 
 let rows
 let names=[['ЛК-4', 'песок(0*5)'], ['ЛК-6', '0*40', '0*70', '20*40', '20*70'], ['ЛК-7', '5*10'], ['ЛК-8', '10*20', '5*20'],
@@ -10,42 +10,30 @@ window.onload = function () {
 }
 
 function update() {
-    ajaxRequest()
+    updateRequest()
 }
 
-function ajaxRequest() {
-    httpRequest = new XMLHttpRequest();
-    if (!httpRequest) {
+function updateRequest() {
+    httpUpdateRequest = new XMLHttpRequest();
+    if (!httpUpdateRequest) {
         alert('Giving up :( Cannot create an XMLHTTP instance');
         return false;
     }
-    httpRequest.timeout = 2000
-    httpRequest.ontimeout = function (e) {
+    httpUpdateRequest.timeout = 2000
+    httpUpdateRequest.ontimeout = function (e) {
         document.getElementsByTagName("footer")[0].innerText="Таймаут соединения с сервером"
     }
-    httpRequest.onreadystatechange = ajaxUpdate;
+    httpUpdateRequest.onreadystatechange = updateResponse;
 
-    let params = "?"
-    let separator = ""
-    for(let i=0;i<names.length;i++) {
-        params += separator
-        separator = "&"
-        let id = "dtype"+i
-        params += id + "=" + document.getElementById(id).getElementsByTagName("input")[0].value.slice(2,4)
-        id = "ipaddr"+i
-        params += "&" + id + "=" + document.getElementById(id).getElementsByTagName("input")[0].value
-        id = "rs485addr"+i
-        params += "&" + id + "=" + document.getElementById(id).getElementsByTagName("input")[0].value
-    }
-    httpRequest.open('GET', 'ajax_update'+params);
-    httpRequest.send();
+    httpUpdateRequest.open('GET', 'ajax_update');
+    httpUpdateRequest.send();
 }
 
-function ajaxUpdate() {
-    if (httpRequest.readyState === XMLHttpRequest.DONE) {
-        if (httpRequest.status === 200) {
+function updateResponse() {
+    if (httpUpdateRequest.readyState === XMLHttpRequest.DONE) {
+        if (httpUpdateRequest.status === 200) {
             document.getElementsByTagName("footer")[0].innerText=""
-            let params = JSON.parse(httpRequest.responseText)
+            let params = JSON.parse(httpUpdateRequest.responseText)
             console.log(params)
             for(let i=0;i<names.length;i++){
                 let DataPerfValue = params[i].DataPerfValue / 10
@@ -61,7 +49,7 @@ function ajaxUpdate() {
             }
         } else {
             document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером (статус: " +
-                httpRequest.status + ")"
+                httpUpdateRequest.status + ")"
         }
     }
 }
@@ -123,6 +111,14 @@ function addrow(name, i) {
     d = document.createElement("div");
     d.setAttribute('id', 'responses'+i)
     rows.appendChild(d)
+    // Save button
+    d = document.createElement("div");
+    d.innerHTML = '<input type="button" value="Сохранить" id="save'+i+'" onclick="saveClick('+i+')">'
+    rows.appendChild(d)
+    // Clear button
+    d = document.createElement("div");
+    d.innerHTML = '<input type="button" value="Очистить" id="clear'+i+'" onclick="clearClick('+i+')">'
+    rows.appendChild(d)
 }
 
 function selectTab(tabName) {
@@ -144,4 +140,34 @@ function selectTab(tabName) {
     // Show the current tab, and add an "active" class to the button that opened the tab
     document.getElementById(tabName).style.display = "block";
     event.currentTarget.className += " active";
+}
+
+
+function sendRequest(url, params, errorText) {
+    let request = new XMLHttpRequest();
+    if (!request) {
+        alert('Giving up :( Cannot create an XMLHTTP instance');
+        return false;
+    }
+    request.timeout = 2000
+    request.ontimeout = function (e) {
+        document.getElementsByTagName("footer")[0].innerText=errorText
+    }
+    // httpSaveRequest.onreadystatechange = ajaxUpdate;
+
+    request.open('GET', url+params);
+    request.send();
+
+}
+
+function saveClick(i) {
+    let params = "?id="+i
+    params +="&dtype=" + document.getElementById("dtype"+i).getElementsByTagName("input")[0].value.slice(2,4)
+    params += "&ipaddr=" + document.getElementById("ipaddr"+i).getElementsByTagName("input")[0].value
+    params += "&rs485addr=" + document.getElementById("rs485addr"+i).getElementsByTagName("input")[0].value
+    sendRequest("save", params, "Ошибка сохранения")
+}
+
+function clearClick(i) {
+    sendRequest("clear", "?id="+i)
 }

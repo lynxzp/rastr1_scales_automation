@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	ScalsesNums   = 15
 	DataAccumAddr = 0x60
 )
 

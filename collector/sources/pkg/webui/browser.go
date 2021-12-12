@@ -1,6 +1,8 @@
 package webui
 
 import (
+	"collector/pkg/config"
+	"collector/pkg/store"
 	"collector/pkg/ucma"
 	"encoding/json"
 	"fmt"
@@ -51,8 +53,7 @@ const (
 )
 
 var (
-	config Config
-	scales *[ucma.ScalsesNums]ucma.Ucma
+	scales *[config.ScalesNums]ucma.Ucma
 )
 
 func isSlashRune(r rune) bool { return r == '/' || r == '\\' }
@@ -77,41 +78,71 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "pkg/webui/www/"+r.URL.Path)
 }
 
-func ajax_update(w http.ResponseWriter, r *http.Request) {
-	for i := 0; i < ucma.ScalsesNums; i++ {
-		dataPerfAddr, ok := r.URL.Query()["dtype"+strconv.Itoa(i)]
-		if !ok {
-			continue
-		}
-		val, err := strconv.ParseUint(dataPerfAddr[0], 16, 8)
-		if err != nil {
-			continue
-		}
-		scales[i].DataPerfAddr = uint16(val)
-
-		ipaddr, ok := r.URL.Query()["ipaddr"+strconv.Itoa(i)]
-		if !ok || len(ipaddr[0]) < 7 {
-			continue
-		}
-		scales[i].IP = ipaddr[0]
-
-		rs485addr, ok := r.URL.Query()["rs485addr"+strconv.Itoa(i)]
-		if !ok || len(rs485addr[0]) < 1 {
-			continue
-		}
-		val, err = strconv.ParseUint(rs485addr[0], 10, 8)
-		if err != nil {
-			continue
-		}
-		scales[i].Rs485addr = uint8(val)
-	}
-
-	// response
+func ajaxUpdate(w http.ResponseWriter, r *http.Request) {
 	js, err := json.Marshal(scales)
 	if err != nil {
 		log.Println(err)
 	}
 	w.Write(js)
+}
+
+func ajaxSave(w http.ResponseWriter, r *http.Request) {
+	idStr, ok := r.URL.Query()["id"]
+	if !ok {
+		return
+	}
+	id, err := strconv.ParseUint(idStr[0], 10, 8)
+	if err != nil {
+		return
+	}
+
+	dataPerfAddrStr, ok := r.URL.Query()["dtype"]
+	if !ok {
+		return
+	}
+	dataPerfAddr, err := strconv.ParseUint(dataPerfAddrStr[0], 16, 8)
+	if err != nil {
+		return
+	}
+
+	ipaddr, ok := r.URL.Query()["ipaddr"]
+	if !ok || len(ipaddr[0]) < 7 {
+		return
+	}
+
+	rs485addrStr, ok := r.URL.Query()["rs485addr"]
+	if !ok || len(rs485addrStr[0]) < 1 {
+		return
+	}
+	rs485addr, err := strconv.ParseUint(rs485addrStr[0], 10, 8)
+	if err != nil {
+		return
+	}
+
+	store.SaveScale(int(id), int(dataPerfAddr), ipaddr[0], int(rs485addr))
+	reloadScales()
+	scales[id].Requests = 0
+	scales[id].Responses = 0
+
+	w.Write([]byte("ok"))
+}
+
+func ajaxClear(w http.ResponseWriter, r *http.Request) {
+	idStr, ok := r.URL.Query()["id"]
+	if !ok {
+		return
+	}
+	id, err := strconv.ParseUint(idStr[0], 10, 8)
+	if err != nil {
+		return
+	}
+
+	store.ClearScale(int(id))
+	scales[id].Requests = 0
+	scales[id].Responses = 0
+	reloadScales()
+
+	w.Write([]byte("ok"))
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -120,7 +151,15 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/ajax_update" {
-		ajax_update(w, r)
+		ajaxUpdate(w, r)
+		return
+	}
+	if r.URL.Path == "/save" {
+		ajaxSave(w, r)
+		return
+	}
+	if r.URL.Path == "/clear" {
+		ajaxClear(w, r)
 		return
 	}
 	if r.URL.Path != "/" {
@@ -130,9 +169,26 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "pkg/webui/www/index.html")
 }
 
-func StartWeb(config_ Config, sc *[ucma.ScalsesNums]ucma.Ucma) {
+func StartWeb(sc *[config.ScalesNums]ucma.Ucma) {
 	scales = sc
-	config = config_
+	reloadScales()
 	http.HandleFunc("/", serveHome)
-	log.Fatal(http.ListenAndServe(config.ListenIP+":"+config.ListenPort, nil))
+	log.Fatal(http.ListenAndServe(config.ListenIP+":"+strconv.Itoa(config.ListenPort), nil))
+}
+
+func reloadScales() {
+	s, err := store.ReadScales()
+	if err != nil {
+		log.Println("EE Can't load scales config: ", err)
+		return
+	}
+	if len(s) != config.ScalesNums {
+		log.Println("WW config.ScalesNums=", config.ScalesNums, " scales in db=", len(s))
+		return
+	}
+	for i := range s {
+		scales[i].DataPerfAddr = uint16(s[i].DataPerfAddr)
+		scales[i].Rs485addr = uint8(s[i].Rs485addr)
+		scales[i].IP = s[i].Ip
+	}
 }
