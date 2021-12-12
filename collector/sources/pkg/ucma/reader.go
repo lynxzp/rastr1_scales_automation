@@ -15,10 +15,10 @@ const (
 
 type Ucma struct {
 	conn           net.Conn      `json:"-"`
-	IP             string        `json:"-"`
+	IP             string        `json:"ipaddr"`
 	Port           string        `json:"-"`
-	Rs485addr      uint8         `json:"-"`
-	DataPerfAddr   uint16        `json:"-"`
+	Rs485addr      uint8         `json:"rs485addr"`
+	DataPerfAddr   uint16        `json:"dtype"`
 	DataPerfValue  int32         `json:"DataPerfValue"`
 	DataAccumValue int32         `json:"DataAccumValue"`
 	Requests       int32         `json:"requests"`

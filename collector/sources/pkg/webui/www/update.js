@@ -34,7 +34,7 @@ function updateResponse() {
         if (httpUpdateRequest.status === 200) {
             document.getElementsByTagName("footer")[0].innerText=""
             let params = JSON.parse(httpUpdateRequest.responseText)
-            console.log(params)
+            // console.log(params[0])
             for(let i=0;i<names.length;i++){
                 let DataPerfValue = params[i].DataPerfValue / 10
                 let DataAccumValue = params[i].DataAccumValue
@@ -46,6 +46,9 @@ function updateResponse() {
                 }
                 document.getElementById("requests" + i).innerText = params[i].requests
                 document.getElementById("responses" + i).innerText = params[i].responses
+                document.getElementById("rs485addr" + i).getElementsByTagName("input")[0].value = params[i].rs485addr
+                document.getElementById("ipaddr"+i).getElementsByTagName("input")[0].value = params[i].ipaddr
+                document.getElementById("dtype" + i).getElementsByTagName("input")[0].value = "0x" + parseInt(params[i].dtype).toString(16)
             }
         } else {
             document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером (статус: " +
