@@ -1,4 +1,4 @@
-// window.setInterval(update,200)
+window.setInterval(update,200)
 
 let rows
 let names=[['ЛК-4', 'песок(0*5)'], ['ЛК-6', '0*40', '0*70', '20*40', '20*70'], ['ЛК-7', '5*10'], ['ЛК-8', '10*20', '5*20'],
@@ -70,7 +70,7 @@ function addrow(name, i) {
     // name
     let d = document.createElement("div");
     d.setAttribute('id', 'name'+i)
-    d.innerHTML = "<input type='text' maxlength='10' size='1' value='"+name[0]+"'>"
+    d.innerHTML = name[0]
     rows.appendChild(d)
     // fraction
     d = document.createElement("div");
@@ -112,7 +112,7 @@ function addrow(name, i) {
     rows.appendChild(d)
     // rs-485 address
     d = document.createElement("div");
-    d.setAttribute('id', 'rs485adErrordr'+i)
+    d.setAttribute('id', 'rs485addr'+i)
     d.innerHTML = "<input type=\"text\" minlength=\"1\" maxlength=\"3\" size=\"3\" pattern=\"^\\d{1,3}$\">"
     rows.appendChild(d)
     // Requests
