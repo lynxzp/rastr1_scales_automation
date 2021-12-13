@@ -7,6 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"runtime"
+	"time"
 )
 
 const (
@@ -27,10 +28,16 @@ func init() {
 	})
 
 	sqlStmt := `CREATE TABLE if not exists scales (id INTEGER, ip TEXT, rs485addr INTEGER, data_perf_addr INTEGER)`
-
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
-		log.Printf("%q: %s\n", err, sqlStmt)
+		log.Printf("EE %q: %s\n", err, sqlStmt)
+		return
+	}
+
+	sqlStmt = `CREATE TABLE if not exists data (scale INTEGER, accumulation INTEGER, event TEXT, shift INTEGER, fraction TEXT, datetime INTEGER)`
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		log.Printf("EE %q: %s\n", err, sqlStmt)
 		return
 	}
 }
@@ -93,4 +100,19 @@ func ReadScales() ([]Scale, error) {
 		log.Println(id, ip, rs485addr, dataPerfAddr)
 	}
 	return scales, nil
+}
+
+func SaveEvent(scale int, accumulation int, event string, shift int, fraction string) {
+	smt := "INSERT INTO data (scale, accumulation, event, shift, fraction, datetime) VALUES (?, ?, ?, ?, ?, datetime('now'))"
+	res, err := db.Exec(smt, scale, accumulation, event, shift, fraction)
+	if err != nil {
+		log.Println("WW can't save scales:", scale, accumulation, event, shift, fraction, "with err:", err)
+		return
+	}
+	affected, err := res.RowsAffected()
+	if (err != nil) || (affected != 1) {
+		log.Println("WW problem saving scales, err:", err, "rows affected:", affected)
+		return
+	}
+	log.Println("saved scales:", scale, accumulation, event, shift, fraction, time.Now())
 }

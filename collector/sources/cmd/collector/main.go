@@ -20,6 +20,7 @@ func main() {
 	webui.OpenBrowser("http://" + config.ListenIP + ":" + strconv.Itoa(config.ListenPort))
 	requestDelay := 1000 * time.Millisecond
 	for i := range Scales {
+		Scales[i].Id = int8(i)
 		Scales[i].Start(requestDelay)
 	}
 	for {
