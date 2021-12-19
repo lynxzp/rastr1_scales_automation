@@ -4,6 +4,7 @@ import (
 	"collector/pkg/config"
 	"database/sql"
 	"errors"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"runtime"
@@ -35,6 +36,13 @@ func init() {
 	}
 
 	sqlStmt = `CREATE TABLE if not exists data (scale INTEGER, accumulation INTEGER, event TEXT, shift INTEGER, fraction TEXT, datetime INTEGER)`
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		log.Printf("EE %q: %s\n", err, sqlStmt)
+		return
+	}
+
+	sqlStmt = `CREATE [UNIQUE] INDEX index_datetime	ON data(datetime)`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
 		log.Printf("EE %q: %s\n", err, sqlStmt)
@@ -115,4 +123,87 @@ func SaveEvent(scale int, accumulation int, event string, shift int, fraction st
 		return
 	}
 	log.Println("saved scales:", scale, accumulation, event, shift, fraction, time.Now())
+}
+
+func PeriodicSave(scale int, accumulation int, event string, shift int, fraction string) {
+	SaveEvent(scale, accumulation, event, shift, fraction)
+
+	smt := "SELECT event, shift, fraction, datetime  FROM data WHERE scale = ? ORDER BY datetime DESC LIMIT 2"
+	rows, err := db.Query(smt, scale)
+	if err != nil {
+		log.Println("WW can't load 2 last with err:", scale, err)
+		return
+	}
+	defer rows.Close()
+	var events string
+	var shifts int
+	var fractions string
+	var dateTimeString string
+
+	if rows.Next() == false {
+		log.Println("EE: this is impossible, no lines after writing into db")
+		return
+	}
+	err = rows.Scan(&events, &shifts, &fractions, &dateTimeString)
+	if err != nil {
+		log.Println("EE: read from db unexpected lines", err)
+		return
+	}
+	if (events != event) || (shifts != shift) || (fractions != fraction) {
+		return
+	}
+	if rows.Next() == false {
+		log.Println("WW: only 1 saved value for scale", scale, "?")
+		return
+	}
+	err = rows.Scan(&events, &shifts, &fractions, &dateTimeString)
+	if err != nil {
+		log.Println("EE: read from db unexpected lines")
+		return
+	}
+	if (events != event) || (shifts != shift) || (fractions != fraction) {
+		return
+	}
+	rows.Close()
+
+	smt = "DELETE FROM data WHERE datetime = ? AND scale = ? AND event = ?"
+	res, err := db.Exec(smt, dateTimeString, scale, event)
+	if err != nil {
+		log.Println("WW can't delete double save:", scale, accumulation, event, shift, fraction, "with err:", err)
+		return
+	}
+	affected, err := res.RowsAffected()
+	if (err != nil) || (affected != 1) {
+		log.Println("WW problem deleting double save, err:", err, "rows affected:", affected)
+		return
+	}
+
+}
+
+func ExportData() chan string {
+	ret := make(chan string)
+	go exportBackground(ret)
+	return ret
+}
+
+func exportBackground(c chan string) {
+	defer close(c)
+	smt := "SELECT * FROM data"
+	rows, err := db.Query(smt)
+	if err != nil {
+		log.Println("WW can't load any data err:", err)
+		return
+	}
+	c <- "scale,accumulation,event,shift,fraction,datetime\r\n"
+	defer rows.Close()
+	for rows.Next() {
+		var scale, accumulation, shift int
+		var event, fraction, datetime string
+		err = rows.Scan(&scale, &accumulation, &event, &shift, &fraction, &datetime)
+		if err != nil {
+			log.Println("WW", err)
+			return
+		}
+		c <- fmt.Sprintf("%d,%d,%s,%d,%s,%s\r\n", scale, accumulation, event, shift, fraction, datetime)
+	}
 }

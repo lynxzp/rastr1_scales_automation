@@ -1,8 +1,6 @@
 package ucma
 
 import (
-	"collector/pkg/shift"
-	"collector/pkg/store"
 	"encoding/binary"
 	"encoding/json"
 	"io"
@@ -28,6 +26,7 @@ type Ucma struct {
 	RequestDelay   time.Duration `json:"-"`
 	Id             int8          `json:"-"`
 	Fraction       string        `json:"-"`
+	time           time.Time     `json:"-"`
 }
 
 func (ucma *Ucma) Start(requestDelay time.Duration) {
@@ -55,8 +54,9 @@ func (ucma *Ucma) request() {
 	}
 	ucma.requestProxy(DataAccumAddr, &ucma.DataAccumValue)
 	if firstRead && (ucma.DataAccumValue != 0) {
-		store.SaveEvent(int(ucma.Id), int(ucma.DataAccumValue), "start", shift.GetCurrentShift(), ucma.Fraction)
+		ucma.startSave()
 	}
+	ucma.periodicSave()
 }
 
 func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
@@ -85,7 +85,6 @@ func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
 		ucma.Responses++
 		*dataP = data
 	}
-
 }
 
 func (ucma *Ucma) modbusRequest(addr uint16) int32 {

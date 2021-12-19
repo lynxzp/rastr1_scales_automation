@@ -145,6 +145,15 @@ func ajaxClear(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok"))
 }
 
+func exportHandler(w http.ResponseWriter, r *http.Request) {
+	c := store.ExportData()
+	headers := w.Header()
+	headers["Content-Type"] = []string{"text/csv"}
+	for str := range c {
+		w.Write([]byte(str))
+	}
+}
+
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -160,6 +169,10 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/clear" {
 		ajaxClear(w, r)
+		return
+	}
+	if r.URL.Path == "/export" {
+		exportHandler(w, r)
 		return
 	}
 	if r.URL.Path != "/" {
