@@ -41,7 +41,7 @@ func init() {
 		return
 	}
 
-	sqlStmt = `CREATE [UNIQUE] INDEX index_datetime	ON data(datetime)`
+	sqlStmt = `CREATE INDEX IF NOT EXISTS index_datetime ON data(datetime)`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
 		log.Printf("EE %q: %s\n", err, sqlStmt)
