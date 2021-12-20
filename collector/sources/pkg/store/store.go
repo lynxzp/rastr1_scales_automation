@@ -176,13 +176,13 @@ func PeriodicSave(scale int, accumulation int, event string, shift int, fraction
 
 }
 
-func ExportData() chan string {
+func ExportData(sep string) chan string {
 	ret := make(chan string)
-	go exportBackground(ret)
+	go exportBackground(ret, sep)
 	return ret
 }
 
-func exportBackground(c chan string) {
+func exportBackground(c chan string, s string) {
 	defer close(c)
 	smt := "SELECT * FROM data"
 	rows, err := db.Query(smt)
@@ -190,7 +190,7 @@ func exportBackground(c chan string) {
 		log.Println("WW can't load any data err:", err)
 		return
 	}
-	c <- "scale,accumulation,event,shift,fraction,datetime\r\n"
+	c <- "scale" + s + "accumulation" + s + "event" + s + "shift" + s + "fraction" + s + "datetime\r\n"
 	defer rows.Close()
 	for rows.Next() {
 		var scale, accumulation, shift int
@@ -200,6 +200,6 @@ func exportBackground(c chan string) {
 			log.Println("WW", err)
 			return
 		}
-		c <- fmt.Sprintf("%d,%d,%s,%d,%s,%s\r\n", scale, accumulation, event, shift, fraction, datetime)
+		c <- fmt.Sprintf("%d%s%d%s%s%s%d%s%s%s%s\r\n", scale, s, accumulation, s, event, s, shift, s, fraction, s, datetime)
 	}
 }

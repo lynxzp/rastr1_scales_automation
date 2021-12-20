@@ -9,7 +9,6 @@
     <div class="tab">
         <button class="tablinks" onclick="selectTab('vesi')">Весы</button>
         <button class="tablinks" onclick="selectTab('tseha')">Цеха</button>
-        <button class="tablinks" onclick="selectTab('users')">Пользователи</button>
         <button class="tablinks" onclick="selectTab('logs')">Журнал</button>
     </div>
 
@@ -52,13 +51,11 @@
         </tbody></table>
     </div>
 
-    <div id="users" class="tabcontent">
-        <h3>На данный момент пользователей нет, все могут изменить все</h3>
-    </div>
-
-    <div id="logs" class="tabcontent">
+        <div id="logs" class="tabcontent">
         <h3>Журнал работы весов</h3>
-        <div><a href="/export">Полный csv доступен по ссылке</a>. Может использоваться для импорта в exel или обрабатываться иным способом.</div>
+        <div>Полный журнал в формате CVS доступен по ссылке ниже. Может использоваться для импорта в exel или обрабатываться иным способом.</div>
+        <div><a href="/export">CVS for English Windows</a>.</div>
+        <div><a href="/export?separator=%3B">CVS для Windows с кириллическими региональными настройками</a>.</div>
     </div>
 
 <footer></footer>

@@ -147,8 +147,16 @@ func ajaxClear(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok"))
 }
 
-func exportHandler(w http.ResponseWriter, r *http.Request) {
-	c := store.ExportData()
+func exportCVS(w http.ResponseWriter, r *http.Request) {
+	sepParam, ok := r.URL.Query()["separator"]
+	if !ok {
+		return
+	}
+	separator := ","
+	if sepParam[0] == ";" {
+		separator = ";"
+	}
+	c := store.ExportData(separator)
 	headers := w.Header()
 	headers["Content-Type"] = []string{"text/csv"}
 	for str := range c {
@@ -174,7 +182,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/export" {
-		exportHandler(w, r)
+		exportCVS(w, r)
 		return
 	}
 	if r.URL.Path != "/" {
