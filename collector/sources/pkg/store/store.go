@@ -8,7 +8,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"runtime"
-	"time"
 )
 
 const (
@@ -51,7 +50,8 @@ func init() {
 }
 
 func SaveScale(id int, dataPerfAddr int, ip string, rs485addr int) {
-	smt := "INSERT OR REPLACE INTO scales (id, ip, rs485addr, data_perf_addr) VALUES(?, ?, ?, ?)"
+	ClearScale(id)
+	smt := "INSERT INTO scales (id, ip, rs485addr, data_perf_addr) VALUES(?, ?, ?, ?)"
 	res, err := db.Exec(smt, id, ip, rs485addr, dataPerfAddr)
 	if err != nil {
 		log.Println("WW can't save scales:", id, ip, rs485addr, dataPerfAddr, "with err:", err)
@@ -62,7 +62,6 @@ func SaveScale(id int, dataPerfAddr int, ip string, rs485addr int) {
 		log.Println("WW problem saving scales, err:", err, "rows affected:", affected)
 		return
 	}
-	log.Println("saved scales:", id, dataPerfAddr, ip, rs485addr)
 }
 
 func ClearScale(id int) {
@@ -73,11 +72,10 @@ func ClearScale(id int) {
 		return
 	}
 	affected, err := res.RowsAffected()
-	if (err != nil) || (affected != 1) {
-		log.Println("WW problem saving scales, err:", err, "rows affected:", affected)
+	if (err != nil) || (affected > 1) {
+		log.Println("WW problem clearing scales, err:", err, "rows affected:", affected)
 		return
 	}
-	log.Println("cleared scales:", id)
 }
 
 type Scale struct {
@@ -105,7 +103,6 @@ func ReadScales() ([]Scale, error) {
 		scales[id].Rs485addr = rs485addr
 		scales[id].Ip = ip
 		scales[id].DataPerfAddr = dataPerfAddr
-		log.Println(id, ip, rs485addr, dataPerfAddr)
 	}
 	return scales, nil
 }
@@ -122,7 +119,6 @@ func SaveEvent(scale int, accumulation int, event string, shift int, fraction st
 		log.Println("WW problem saving scales, err:", err, "rows affected:", affected)
 		return
 	}
-	log.Println("saved scales:", scale, accumulation, event, shift, fraction, time.Now())
 }
 
 func PeriodicSave(scale int, accumulation int, event string, shift int, fraction string) {

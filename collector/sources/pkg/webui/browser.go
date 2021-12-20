@@ -140,6 +140,8 @@ func ajaxClear(w http.ResponseWriter, r *http.Request) {
 	store.ClearScale(int(id))
 	scales[id].Requests = 0
 	scales[id].Responses = 0
+	scales[id].DataPerfValue = 0
+	scales[id].DataAccumValue = 0
 	reloadScales()
 
 	w.Write([]byte("ok"))
