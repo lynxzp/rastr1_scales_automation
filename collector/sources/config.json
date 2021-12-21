@@ -1,0 +1,40 @@
+{
+    "listen_port":8080,
+    "listen_ip":"0.0.0.0",
+    "shifts_doc1": "Время окончания смены должно быть больше времени начала смены.",
+    "shifts_doc2": "Смена может повторяться несколько раз, например в случае смены даты.",
+    "shifts": [
+        {
+            "number": 1,
+            "start": "06:00",
+            "finish": "14:00"
+        },
+        {
+            "number": 2,
+            "start": "14:00",
+            "finish": "20:00"
+        },
+        {
+            "number": 3,
+            "start": "22:00",
+            "finish": "24:00"
+        },
+        {
+            "number": 3,
+            "start": "00:00",
+            "finish": "06:00"
+        }
+    ],
+    "users":[
+    {
+        "name":"Вася",
+        "password":"123",
+        "rights": "read_only"
+    },
+    {
+        "name":"Петя",
+        "password":"12345",
+        "rights": "change_fraction"
+    }
+]
+}

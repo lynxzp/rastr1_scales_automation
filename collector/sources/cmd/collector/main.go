@@ -17,7 +17,7 @@ func main() {
 	go webui.StartWeb(&Scales)
 
 	time.Sleep(1 * time.Second)
-	webui.OpenBrowser("http://127.0.0.1:" + strconv.Itoa(config.ListenPort))
+	webui.OpenBrowser("http://127.0.0.1:" + strconv.Itoa(config.Cfg.ListenPort))
 	requestDelay := 1000 * time.Millisecond
 	for i := range Scales {
 		Scales[i].Id = int8(i)

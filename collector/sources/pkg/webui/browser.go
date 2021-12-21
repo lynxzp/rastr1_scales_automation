@@ -196,7 +196,7 @@ func StartWeb(sc *[config.ScalesNums]ucma.Ucma) {
 	scales = sc
 	reloadScales()
 	http.HandleFunc("/", serveHome)
-	log.Fatal(http.ListenAndServe(config.ListenIP+":"+strconv.Itoa(config.ListenPort), nil))
+	log.Fatal(http.ListenAndServe(config.Cfg.ListenIP+":"+strconv.Itoa(config.Cfg.ListenPort), nil))
 }
 
 func reloadScales() {
