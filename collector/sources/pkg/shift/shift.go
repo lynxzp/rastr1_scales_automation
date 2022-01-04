@@ -38,7 +38,7 @@ func GetCurrentShift() int {
 	//	return 3
 	//}
 	//return 0
-	t := time.Time{}
+	t := time.Now()
 	for i := range config.Cfg.Shifts {
 		if t.AfterOrEqual(config.Cfg.Shifts[i].Start) && t.BeforeOrEqual(config.Cfg.Shifts[i].Finish) {
 			return config.Cfg.Shifts[i].Number

@@ -3,6 +3,7 @@ package time
 import (
 	"log"
 	"strconv"
+	systemT "time"
 )
 
 type Time struct {
@@ -48,4 +49,12 @@ func (t1 *Time) AfterOrEqual(t2 Time) bool {
 		return true
 	}
 	return false
+}
+
+func Now() Time {
+	ownT := Time{}
+	sysT := systemT.Now()
+	ownT.hours = sysT.Hour()
+	ownT.minutes = sysT.Minute()
+	return ownT
 }
