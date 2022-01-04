@@ -8,6 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"runtime"
+	"time"
 )
 
 const (
@@ -15,6 +16,15 @@ const (
 )
 
 var db *sql.DB
+
+type DataRecord struct {
+	Scale        int
+	Accumulation int
+	Event        string
+	Shift        int
+	Fraction     string
+	Datetime     string
+}
 
 func init() {
 	var err error
@@ -201,5 +211,67 @@ func exportBackground(c chan string, s string) {
 			return
 		}
 		c <- fmt.Sprintf("%d%s%d%s%s%s%d%s%s%s%s\r\n", scale, s, accumulation, s, event, s, shift, s, fraction, s, datetime)
+	}
+}
+
+func ExportDataStruct(scale int, start time.Time, finish time.Time) chan DataRecord {
+	ret := make(chan DataRecord)
+	go exportBackgroundStruct(ret, scale, start, finish)
+	return ret
+}
+
+func exportBackgroundStruct(c chan DataRecord, scale int, start time.Time, finish time.Time) {
+	defer close(c)
+	smt := "SELECT * FROM data WHERE scale = ? AND datetime > ? AND datetime < ?"
+	rows, err := db.Query(smt, scale, start, finish)
+	if err != nil {
+		log.Println("WW can't load any data err:", err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var scale, accumulation, shift int
+		var event, fraction, datetime string
+		err = rows.Scan(&scale, &accumulation, &event, &shift, &fraction, &datetime)
+		if err != nil {
+			log.Println("WW", err)
+			return
+		}
+		c <- DataRecord{scale, accumulation, event, shift, fraction, datetime}
+	}
+}
+
+func ExportDataStructAnyTime(start time.Time, finish time.Time, shift int) chan DataRecord {
+	ret := make(chan DataRecord)
+	go exportBackgroundStructAnyTime(ret, start, finish, shift)
+	return ret
+}
+
+func exportBackgroundStructAnyTime(c chan DataRecord, start time.Time, finish time.Time, shift int) {
+	defer close(c)
+	var smt string
+	var rows *sql.Rows
+	var err error
+	if shift == 0 {
+		smt = "SELECT * FROM data WHERE datetime > ? AND datetime < ?"
+		rows, err = db.Query(smt, start, finish)
+	} else {
+		smt = "SELECT * FROM data WHERE datetime > ? AND datetime < ? AND shift = ?"
+		rows, err = db.Query(smt, start, finish, shift)
+	}
+	if err != nil {
+		log.Println("WW can't load any data err:", err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var scale, accumulation, shift int
+		var event, fraction, datetime string
+		err = rows.Scan(&scale, &accumulation, &event, &shift, &fraction, &datetime)
+		if err != nil {
+			log.Println("WW", err)
+			return
+		}
+		c <- DataRecord{scale, accumulation, event, shift, fraction, datetime}
 	}
 }

@@ -37,9 +37,7 @@ func (ucma *Ucma) Start(requestDelay time.Duration) {
 
 func (ucma *Ucma) read() {
 	for {
-		log.Println("DD read started")
 		ucma.request()
-		log.Println("DD read finished")
 		<-time.After(ucma.RequestDelay)
 	}
 }
@@ -54,12 +52,10 @@ func (ucma *Ucma) request() {
 	if ucma.DataAccumValue == 0 {
 		firstRead = true
 	}
-	log.Println("DD read performance finished")
 	ucma.requestProxy(DataAccumAddr, &ucma.DataAccumValue)
 	if firstRead && (ucma.DataAccumValue != 0) {
 		ucma.startSave()
 	}
-	log.Println("DD read accumulation finished")
 	ucma.periodicSave()
 }
 
@@ -83,7 +79,6 @@ func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
 	defer func() {
 		ucma.conn.Close()
 	}()
-	log.Println("DD connection established")
 
 	data := ucma.modbusRequest(addr)
 	if data >= 0 {
@@ -106,7 +101,6 @@ func (ucma *Ucma) modbusRequest(addr uint16) int32 {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("DD waiting response")
 	var data int32
 	// response
 	bytes := make([]byte, 64)
@@ -133,7 +127,6 @@ func (ucma *Ucma) modbusRequest(addr uint16) int32 {
 			return 0
 		}
 	}
-	log.Println("DD response was read")
 	return data
 }
 

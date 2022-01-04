@@ -2,6 +2,7 @@ package webui
 
 import (
 	"collector/pkg/config"
+	"collector/pkg/reports"
 	"collector/pkg/store"
 	"collector/pkg/ucma"
 	"encoding/json"
@@ -164,6 +165,53 @@ func exportCVS(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type ReportParams []struct {
+	Start        string         `json:"start"`
+	End          string         `json:"end"`
+	Shift        int            `json:"shift"`
+	Column       string         `json:"column"`
+	Accumulation map[string]int `json:"accumulation"`
+}
+
+func reportH(w http.ResponseWriter, r *http.Request) {
+	layout := "02.01.2006 15:04:05"
+
+	paramsStr, ok := r.URL.Query()["params"]
+	if !ok {
+		return
+	}
+	var params ReportParams
+	err := json.Unmarshal([]byte(paramsStr[0]), &params)
+	if err != nil {
+		log.Println(err)
+	}
+
+	for i := range params {
+		startTime, err := time.Parse(layout, params[i].Start)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+		endTime, err := time.Parse(layout, params[i].End)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+		m := reports.Count(startTime, endTime, params[i].Shift)
+		params[i].Accumulation = m
+	}
+
+	log.Println(params)
+	resp, err := json.Marshal(params)
+	if err != nil {
+		log.Println(err)
+	}
+
+	w.Write(resp)
+	//w.Write(jMap)
+	//w.Write([]byte("}"))
+}
+
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -183,6 +231,10 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/export" {
 		exportCVS(w, r)
+		return
+	}
+	if r.URL.Path == "/report" {
+		reportH(w, r)
 		return
 	}
 	if r.URL.Path != "/" {
