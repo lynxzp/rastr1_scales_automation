@@ -1,7 +1,7 @@
 window.setInterval(update,1000)
 
 let rows
-let names=[['ЛК-4', 'песок(0*5)'], ['ЛК-6', '0*40', '0*70', '20*40', '20*70'], ['ЛК-7', '5*10'], ['ЛК-8', '10*20', '5*20'],
+let names=[['ЛК-4', 'песок(0-5)'], ['ЛК-6', '0*40', '0*70', '20*40', '20*70'], ['ЛК-7', '5*10'], ['ЛК-8', '10*20', '5*20'],
     ['ЛК-9', 'песок(0-5)'], ['ЛК-14', '5*10'], ['ЛК-15', '10*20'], ['ЛК-17', '5*20']]
 let firstLoad = true
 
@@ -12,6 +12,7 @@ window.onload = function () {
 
 function update() {
     updateRequest()
+    refreshReports()
 }
 
 function updateRequest() {
@@ -146,6 +147,10 @@ function selectTab(tabName) {
     // Show the current tab, and add an "active" class to the button that opened the tab
     document.getElementById(tabName).style.display = "block";
     event.currentTarget.className += " active";
+
+    if(tabname === "tseha") {
+        refreshReports()
+    }
 }
 
 
@@ -171,6 +176,7 @@ function saveClick(i) {
     params +="&dtype=" + document.getElementById("dtype"+i).getElementsByTagName("input")[0].value.slice(2,4)
     params += "&ipaddr=" + document.getElementById("ipaddr"+i).getElementsByTagName("input")[0].value
     params += "&rs485addr=" + document.getElementById("rs485addr"+i).getElementsByTagName("input")[0].value
+    params += "&fraction=" + document.getElementById("fraction"+i).getElementsByTagName("input")[0].value
     sendRequest("save", params, "Ошибка сохранения")
 }
 

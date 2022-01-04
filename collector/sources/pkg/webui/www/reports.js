@@ -1,19 +1,21 @@
 function refreshReports() {
+    // if(document.getElementById("tseha").style.display !== "block")
+    //     return
     let t = new Date()
     formatTime(t)
     let todayStart = t.setHours(0,0,0,0)
     let todayFinish = t.setHours( 23, 59, 59, 999)
-    let monthStart = new Date(t.setDate(1))
-    let monthFinish = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
-    monthFinish = t.setDate(monthFinish.getDate())
-    let yearstart  = new Date(monthStart.setMonth(0))
-    let yearfinish = new Date(monthStart.setMonth(11))
     let params = [];
     params.push({start:formatTime(todayStart), end:formatTime(todayFinish), shift: 1, column: "todaycolshift1"})
     params.push({start:formatTime(todayStart), end:formatTime(todayFinish), shift: 2, column: "todaycolshift2"})
     params.push({start:formatTime(todayStart), end:formatTime(todayFinish), shift: 3, column: "todaycolshift3"})
     params.push({start:formatTime(todayStart), end:formatTime(todayFinish), shift: 0, column: "todaycol"})
+    let monthStart = new Date(t.setDate(1))
+    let monthFinish = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
+    monthFinish = t.setDate(monthFinish.getDate())
     params.push({start:formatTime(monthStart), end:formatTime(monthFinish), shift: 0, column: "monthcol"})
+    let yearstart  = new Date(monthStart.setMonth(0))
+    let yearfinish = new Date(monthStart.setMonth(11))
     params.push({start:formatTime(yearstart), end:formatTime(yearfinish), shift: 0, column: "yearcol"})
     reportRequest(params)
     // todo:
@@ -54,7 +56,7 @@ function reportRequest(struct) {
     httpReportRequest.send();
 }
 
-let scfr=['0', '00*40', '00*70', '020*40', '020*70', '15*10', '210*20', '25*20', '3песок(0*5)', '45*10', '510*20', '65*20', '7песок(0-5)']
+let scfr=[['0_песок(0-5)', 11], ['1_0*40', 0], ['1_0*70', 1], ['1_20*40', 2], ['1_20*70', 3] , ['2_5*10', 4], ['3_10*20', 5] ,['3_5*20', 6], ['4_песок(0-5)', 7], ['5_5*10', 8], ['6_10*20', 9], ['7_5*20', 10]]
 
 function reportResponse() {
     if (httpReportRequest.readyState === XMLHttpRequest.DONE) {
@@ -63,12 +65,11 @@ function reportResponse() {
             let params = JSON.parse(httpReportRequest.responseText)
             for (let i=0; i<6; i++) {
                 for (let j=0; j<scfr.length; j++) {
-                    if( params[i].accumulation[scfr[j]] !== undefined) {
-                        document.getElementById(params[i].column + "_0").innerText = params[i].accumulation[scfr[j][0]]
+                    if( params[i].accumulation[scfr[j][0]] !== undefined) {
+                        document.getElementById(params[i].column + "_"+scfr[j][1]).innerText = params[i].accumulation[scfr[j][0]]
                     }
                 }
             }
-            // console.log(params)
             // todo: something
         } else {
             document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером (статус: " +

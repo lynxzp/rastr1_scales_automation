@@ -37,7 +37,7 @@ func init() {
 		log.Println("Database save closed")
 	})
 
-	sqlStmt := `CREATE TABLE if not exists scales (id INTEGER, ip TEXT, rs485addr INTEGER, data_perf_addr INTEGER)`
+	sqlStmt := `CREATE TABLE if not exists scales (id INTEGER, ip TEXT, rs485addr INTEGER, data_perf_addr INTEGER, fraction TEXT)`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
 		log.Printf("EE %q: %s\n", err, sqlStmt)
@@ -59,10 +59,10 @@ func init() {
 	}
 }
 
-func SaveScale(id int, dataPerfAddr int, ip string, rs485addr int) {
+func SaveScale(id int, dataPerfAddr int, ip string, rs485addr int, fraction string) {
 	ClearScale(id)
-	smt := "INSERT INTO scales (id, ip, rs485addr, data_perf_addr) VALUES(?, ?, ?, ?)"
-	res, err := db.Exec(smt, id, ip, rs485addr, dataPerfAddr)
+	smt := "INSERT INTO scales (id, ip, rs485addr, data_perf_addr, fraction) VALUES(?, ?, ?, ?, ?)"
+	res, err := db.Exec(smt, id, ip, rs485addr, dataPerfAddr, fraction)
 	if err != nil {
 		log.Println("WW can't save scales:", id, ip, rs485addr, dataPerfAddr, "with err:", err)
 		return
@@ -93,6 +93,7 @@ type Scale struct {
 	DataPerfAddr int
 	Ip           string
 	Rs485addr    int
+	Fraction     string
 }
 
 func ReadScales() ([]Scale, error) {
@@ -104,15 +105,16 @@ func ReadScales() ([]Scale, error) {
 	defer rows.Close()
 
 	var id, rs485addr, dataPerfAddr int
-	var ip string
+	var ip, fraction string
 	for rows.Next() {
-		err = rows.Scan(&id, &ip, &rs485addr, &dataPerfAddr)
+		err = rows.Scan(&id, &ip, &rs485addr, &dataPerfAddr, &fraction)
 		if err != nil {
 			continue
 		}
 		scales[id].Rs485addr = rs485addr
 		scales[id].Ip = ip
 		scales[id].DataPerfAddr = dataPerfAddr
+		scales[id].Fraction = fraction
 	}
 	return scales, nil
 }

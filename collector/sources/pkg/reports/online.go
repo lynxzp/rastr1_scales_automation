@@ -37,7 +37,7 @@ func init() {
 }
 
 func processRecord(record store.DataRecord) (string, int) {
-	scaleStr := strconv.Itoa(record.Scale) + record.Fraction
+	scaleStr := strconv.Itoa(record.Scale) + "_" + record.Fraction
 	if record.Event == "start" {
 		prevRecordAccumulation[scaleStr] = record.Accumulation
 		return "", 0
@@ -45,12 +45,15 @@ func processRecord(record store.DataRecord) (string, int) {
 	if record.Event == "periodic" {
 		prev, ok := prevRecordAccumulation[scaleStr]
 		if !ok {
+			prevRecordAccumulation[scaleStr] = record.Accumulation
 			log.Println("WW periodic save without start", record)
 			return "", 0
 		}
 		sum := record.Accumulation - prev
 		if sum < 0 {
-			log.Println("WW the previous accumulation", prevRecordAccumulation[scaleStr], "is greater than the current one", record)
+			//todo: chek this
+			prevRecordAccumulation[scaleStr] = record.Accumulation
+			//log.Println("WW the previous accumulation", prevRecordAccumulation[scaleStr], "is greater than the current one", record)
 			return "", 0
 		}
 		return scaleStr, sum

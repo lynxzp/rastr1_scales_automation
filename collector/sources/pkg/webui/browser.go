@@ -120,7 +120,12 @@ func ajaxSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	store.SaveScale(int(id), int(dataPerfAddr), ipaddr[0], int(rs485addr))
+	fractionStr, ok := r.URL.Query()["fraction"]
+	if !ok || len(fractionStr[0]) < 1 {
+		return
+	}
+
+	store.SaveScale(int(id), int(dataPerfAddr), ipaddr[0], int(rs485addr), fractionStr[0])
 	reloadScales()
 	scales[id].Requests = 0
 	scales[id].Responses = 0
@@ -201,7 +206,6 @@ func reportH(w http.ResponseWriter, r *http.Request) {
 		params[i].Accumulation = m
 	}
 
-	log.Println(params)
 	resp, err := json.Marshal(params)
 	if err != nil {
 		log.Println(err)
@@ -265,5 +269,6 @@ func reloadScales() {
 		scales[i].DataPerfAddr = uint16(s[i].DataPerfAddr)
 		scales[i].Rs485addr = uint8(s[i].Rs485addr)
 		scales[i].IP = s[i].Ip
+		scales[i].Fraction = s[i].Fraction
 	}
 }
