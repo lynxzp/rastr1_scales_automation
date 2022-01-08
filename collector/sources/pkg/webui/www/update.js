@@ -8,6 +8,8 @@ let firstLoad = true
 window.onload = function () {
     rows = document.getElementsByClassName("rows")[0]
     names.forEach((element, index) => {addrow(element, index)})
+    selectTab("tseha")
+    document.getElementById("defaulttab").style.backgroundColor = "#ccc"
 }
 
 function update() {
@@ -148,7 +150,7 @@ function selectTab(tabName) {
     document.getElementById(tabName).style.display = "block";
     event.currentTarget.className += " active";
 
-    if(tabname === "tseha") {
+    if(tabName === "tseha") {
         refreshReports()
     }
 }
