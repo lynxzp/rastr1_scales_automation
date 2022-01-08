@@ -13,18 +13,16 @@ const (
 )
 
 type Configurable struct {
-	ListenPort int     `json:"listen_port"`
-	ListenIP   string  `json:"listen_ip"`
-	Users      []User  `json:"users"`
-	Shifts     []Shift `json:"shifts"`
+	ListenPort int             `json:"listen_port"`
+	ListenIP   string          `json:"listen_ip"`
+	Users      map[string]User `json:"users"`
+	Shifts     []Shift         `json:"shifts"`
 }
 
 var Cfg Configurable
 
 type User struct {
-	Name                 string `json:"name"`
 	Password             string `json:"password"`
-	Rights               string `json:"rights"`
 	AccessChangeFraction bool   `json:"accessChangeFraction"`
 }
 
@@ -36,6 +34,7 @@ type Shift struct {
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	Cfg.Users = make(map[string]User)
 
 	f, err := os.Open("config.json")
 	if err != nil {

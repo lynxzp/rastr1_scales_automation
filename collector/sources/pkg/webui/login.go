@@ -6,24 +6,6 @@ import (
 	"net/http"
 )
 
-type passwords struct {
-	password string
-	//salt     string
-	//hash     string
-}
-
-var users map[string]passwords
-
-func init() {
-	users = make(map[string]passwords)
-
-	for i := range config.Cfg.Users {
-		login := config.Cfg.Users[i].Name
-		password := config.Cfg.Users[i].Password
-		users[login] = passwords{password}
-	}
-}
-
 func sendLoginForm(w http.ResponseWriter, r *http.Request, params string) {
 	http.ServeFile(w, r, "pkg/webui/www/login.html")
 }
@@ -40,7 +22,7 @@ func loginH(w http.ResponseWriter, r *http.Request) {
 	login := r.FormValue("login")
 	password := r.FormValue("password")
 
-	if val, ok := users[login]; ok && (val.password == password) {
+	if val, ok := config.Cfg.Users[login]; ok && (val.Password == password) {
 		cookie1 := &http.Cookie{
 			Name:  "login",
 			Value: login,
@@ -67,7 +49,7 @@ func loggined(r *http.Request) bool {
 			password = c.Value
 		}
 	}
-	if val, ok := users[login]; ok && (val.password == password) {
+	if val, ok := config.Cfg.Users[login]; ok && (val.Password == password) {
 		return true
 	}
 	return false
