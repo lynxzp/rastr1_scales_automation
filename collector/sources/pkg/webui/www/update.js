@@ -9,7 +9,6 @@ window.onload = function () {
     rows = document.getElementsByClassName("rows")[0]
     names.forEach((element, index) => {addrow(element, index)})
     selectTab("tseha")
-    document.getElementById("defaulttab").style.backgroundColor = "#ccc"
 }
 
 function update() {
