@@ -37,7 +37,7 @@ func init() {
 }
 
 func processRecord(record store.DataRecord) (string, int) {
-	scaleStr := strconv.Itoa(record.Scale) + "_" + record.Fraction
+	scaleStr := strconv.Itoa(record.Scale) /* + "_" + record.Fraction*/
 	if record.Event == "start" {
 		prevRecordAccumulation[scaleStr] = record.Accumulation
 		return "", 0
@@ -56,7 +56,7 @@ func processRecord(record store.DataRecord) (string, int) {
 			//log.Println("WW the previous accumulation", prevRecordAccumulation[scaleStr], "is greater than the current one", record)
 			return "", 0
 		}
-		return scaleStr, sum
+		return scaleStr + "_" + record.Fraction, sum
 	}
 	log.Println("WW unexpected record", record)
 	return "", 0

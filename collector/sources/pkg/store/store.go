@@ -120,7 +120,7 @@ func ReadScales() ([]Scale, error) {
 }
 
 func SaveEvent(scale int, accumulation int, event string, shift int, fraction string) {
-	smt := "INSERT INTO data (scale, accumulation, event, shift, fraction, datetime) VALUES (?, ?, ?, ?, ?, datetime('now'))"
+	smt := "INSERT INTO data (scale, accumulation, event, shift, fraction, datetime) VALUES (?, ?, ?, ?, ?, datetime('now','localtime'))"
 	res, err := db.Exec(smt, scale, accumulation, event, shift, fraction)
 	if err != nil {
 		log.Println("WW can't save scales:", scale, accumulation, event, shift, fraction, "with err:", err)
