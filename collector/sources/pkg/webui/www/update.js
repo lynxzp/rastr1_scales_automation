@@ -36,7 +36,14 @@ function updateResponse() {
     if (httpUpdateRequest.readyState === XMLHttpRequest.DONE) {
         if (httpUpdateRequest.status === 200) {
             document.getElementsByTagName("footer")[0].innerText=""
-            let params = JSON.parse(httpUpdateRequest.responseText)
+            let params
+            try {
+                params = JSON.parse(httpUpdateRequest.responseText)
+            } catch (e) {
+                console.log(params)
+                console.log(e)
+                return
+            }
             for(let i=0;i<names.length;i++){
                 let DataPerfValue = params[i].DataPerfValue / 10
                 let DataAccumValue = params[i].DataAccumValue

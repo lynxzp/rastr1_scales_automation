@@ -229,6 +229,7 @@ func serve(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/login" {
 		loginH(w, r)
+		http.Redirect(w, r, "/", 200)
 		return
 	}
 	if r.URL.Path != "/" {

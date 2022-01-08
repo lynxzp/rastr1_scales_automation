@@ -33,7 +33,19 @@ func loginH(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, cookie1)
 		http.SetCookie(w, cookie2)
-		serveMain(w, r)
+
+		w.Write([]byte(`<html>
+    <head>
+        <meta http-equiv="refresh" content="1;url=/" />
+    </head>
+    <body>
+        <h1>Вход успешен. Загрузка...</h1>
+    </body>
+</html>
+`))
+		//http.Redirect(w, r, "/", 200)
+		return
+		//serveMain(w, r)
 	}
 	sendLoginForm(w, r, "wrong=password")
 	return
