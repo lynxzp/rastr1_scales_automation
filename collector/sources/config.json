@@ -25,10 +25,11 @@
             "finish": "06:00"
         }
     ],
+    "users_doc": "Логин и пароль должны быть написаны латинницей",
     "users":[
     {
-        "name":"Вася",
-        "password":"123",
+        "name":"Vasya",
+        "password":"Vas12345",
         "accessChangeFraction": false
     },
     {
