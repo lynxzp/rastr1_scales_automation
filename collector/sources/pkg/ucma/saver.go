@@ -16,7 +16,7 @@ func (ucma *Ucma) periodicSave() {
 		return
 	}
 	n := time.Now()
-	if ucma.time.Add(time.Second * 15).Before(n) {
+	if ucma.time.Add(time.Second).Before(n) {
 		ucma.time = n
 		store.PeriodicSave(int(ucma.Id), int(ucma.DataAccumValue), "periodic", shift.GetCurrentShift(), ucma.Fraction)
 	}
