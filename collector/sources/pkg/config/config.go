@@ -22,9 +22,10 @@ type Configurable struct {
 var Cfg Configurable
 
 type User struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
-	Rights   string `json:"rights"`
+	Name                 string `json:"name"`
+	Password             string `json:"password"`
+	Rights               string `json:"rights"`
+	AccessChangeFraction bool   `json:"accessChangeFraction"`
 }
 
 type Shift struct {
@@ -34,6 +35,8 @@ type Shift struct {
 }
 
 func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	f, err := os.Open("config.json")
 	if err != nil {
 		log.Fatalln("WW cant' open config:", err)
@@ -48,15 +51,5 @@ func init() {
 	err = json.Unmarshal(bs, &Cfg)
 	if err != nil {
 		log.Fatalln("WW can't parse data in file", err)
-	}
-
-	for i := range Cfg.Users {
-		switch Cfg.Users[i].Rights {
-		case "read_only":
-		case "change_fraction":
-		default:
-			log.Println("EE wrong user rights:", Cfg.Users[i])
-			Cfg.Users[i].Rights = "read_only"
-		}
 	}
 }

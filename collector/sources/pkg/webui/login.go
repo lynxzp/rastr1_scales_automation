@@ -1,9 +1,8 @@
 package webui
 
 import (
+	"collector/pkg/config"
 	"fmt"
-	"log"
-	"math/rand"
 	"net/http"
 )
 
@@ -18,14 +17,11 @@ var users map[string]passwords
 func init() {
 	users = make(map[string]passwords)
 
-	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	var salt string
-	for i := 0; i < 16; i++ {
-		salt += string(letterRunes[rand.Intn(len(letterRunes))])
+	for i := range config.Cfg.Users {
+		login := config.Cfg.Users[i].Name
+		password := config.Cfg.Users[i].Password
+		users[login] = passwords{password}
 	}
-	login := "vasya"
-	password := "password"
-	users[login] = passwords{password}
 }
 
 func sendLoginForm(w http.ResponseWriter, r *http.Request, params string) {
@@ -62,7 +58,6 @@ func loginH(w http.ResponseWriter, r *http.Request) {
 }
 
 func loggined(r *http.Request) bool {
-	log.Println(r.Cookies())
 	var login, password string
 	for _, c := range r.Cookies() {
 		if c.Name == "login" {
@@ -72,11 +67,8 @@ func loggined(r *http.Request) bool {
 			password = c.Value
 		}
 	}
-	log.Println(login, password)
 	if val, ok := users[login]; ok && (val.password == password) {
-		log.Println("loggined")
 		return true
 	}
-	log.Println("access denied")
 	return false
 }

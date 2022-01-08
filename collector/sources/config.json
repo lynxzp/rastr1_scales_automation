@@ -29,12 +29,12 @@
     {
         "name":"Вася",
         "password":"123",
-        "rights": "read_only"
+        "accessChangeFraction": false
     },
     {
-        "name":"Петя",
-        "password":"12345",
-        "rights": "change_fraction"
+        "name":"Max",
+        "password":"playingSUN",
+        "accessChangeFraction": true
     }
 ]
 }
