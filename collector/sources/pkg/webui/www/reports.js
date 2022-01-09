@@ -62,15 +62,19 @@ function reportResponse() {
     if (httpReportRequest.readyState === XMLHttpRequest.DONE) {
         if (httpReportRequest.status === 200) {
             document.getElementsByTagName("footer")[0].innerText=""
-            let params = JSON.parse(httpReportRequest.responseText)
-            for (let i=0; i<6; i++) {
-                for (let j=0; j<scfr.length; j++) {
-                    if( params[i].accumulation[scfr[j][0]] !== undefined) {
-                        document.getElementById(params[i].column + "_"+scfr[j][1]).innerText = params[i].accumulation[scfr[j][0]]
+            try {
+                let params = JSON.parse(httpReportRequest.responseText)
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < scfr.length; j++) {
+                        if (params[i].accumulation[scfr[j][0]] !== undefined) {
+                            document.getElementById(params[i].column + "_" + scfr[j][1]).innerText = params[i].accumulation[scfr[j][0]]
+                        }
                     }
                 }
+            } catch (e) {
+                console.log(e)
+                console.log(httpReportRequest.responseText)
             }
-            // todo: something
         } else {
             document.getElementsByTagName("footer")[0].innerText="Нет соединения с сервером (статус: " +
                 httpReportRequest.status + ")"

@@ -64,7 +64,21 @@ func SaveScale(id int, dataPerfAddr int, ip string, rs485addr int, fraction stri
 	smt := "INSERT INTO scales (id, ip, rs485addr, data_perf_addr, fraction) VALUES(?, ?, ?, ?, ?)"
 	res, err := db.Exec(smt, id, ip, rs485addr, dataPerfAddr, fraction)
 	if err != nil {
-		log.Println("WW can't save scales:", id, ip, rs485addr, dataPerfAddr, "with err:", err)
+		log.Println("WW can't save scales:", id, ip, rs485addr, dataPerfAddr, fraction, "with err:", err)
+		return
+	}
+	affected, err := res.RowsAffected()
+	if (err != nil) || (affected != 1) {
+		log.Println("WW problem saving scales, err:", err, "rows affected:", affected)
+		return
+	}
+}
+
+func SaveScaleFraction(id int, fraction string) {
+	smt := "UPDATE scales SET fraction = ? WHERE id = ?"
+	res, err := db.Exec(smt, fraction, id)
+	if err != nil {
+		log.Println("WW can't save scales:", id, fraction, "with err:", err)
 		return
 	}
 	affected, err := res.RowsAffected()

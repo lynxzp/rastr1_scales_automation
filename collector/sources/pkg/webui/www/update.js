@@ -192,9 +192,10 @@ function sendRequest(url, params, errorText) {
 
 function saveClick(i) {
     let params = "?id="+i
+    if (isLocalhost()){
     params +="&dtype=" + document.getElementById("dtype"+i).getElementsByTagName("input")[0].value.slice(2,4)
     params += "&ipaddr=" + document.getElementById("ipaddr"+i).getElementsByTagName("input")[0].value
-    params += "&rs485addr=" + document.getElementById("rs485addr"+i).getElementsByTagName("input")[0].value
+    params += "&rs485addr=" + document.getElementById("rs485addr"+i).getElementsByTagName("input")[0].value}
     params += "&fraction=" + document.getElementById("fraction"+i).getElementsByTagName("input")[0].value
     sendRequest("save", params, "Ошибка сохранения")
     stopChanging = false

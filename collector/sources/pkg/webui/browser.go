@@ -71,52 +71,77 @@ func ajaxUpdate(w http.ResponseWriter) {
 }
 
 func ajaxSave(w http.ResponseWriter, r *http.Request) {
-	if isAccessChangeFraction(r) == false {
+	if allowed, login := isAccessChangeFraction(r); allowed == false {
+		log.Println(login, "tried to change fraction")
 		return
 	}
-	idStr, ok := r.URL.Query()["id"]
-	if !ok {
-		return
-	}
-	id, err := strconv.ParseUint(idStr[0], 10, 8)
-	if err != nil {
-		return
-	}
+	if isLocalhost(r) {
+		idStr, ok := r.URL.Query()["id"]
+		if !ok {
+			return
+		}
+		id, err := strconv.ParseUint(idStr[0], 10, 8)
+		if err != nil {
+			return
+		}
 
-	dataPerfAddrStr, ok := r.URL.Query()["dtype"]
-	if !ok {
-		return
-	}
-	dataPerfAddr, err := strconv.ParseUint(dataPerfAddrStr[0], 16, 8)
-	if err != nil {
-		return
-	}
+		dataPerfAddrStr, ok := r.URL.Query()["dtype"]
+		if !ok {
+			return
+		}
+		dataPerfAddr, err := strconv.ParseUint(dataPerfAddrStr[0], 16, 8)
+		if err != nil {
+			return
+		}
 
-	ipaddr, ok := r.URL.Query()["ipaddr"]
-	if !ok || len(ipaddr[0]) < 7 {
-		return
-	}
+		ipaddr, ok := r.URL.Query()["ipaddr"]
+		if !ok || len(ipaddr[0]) < 7 {
+			return
+		}
 
-	rs485addrStr, ok := r.URL.Query()["rs485addr"]
-	if !ok || len(rs485addrStr[0]) < 1 {
-		return
-	}
-	rs485addr, err := strconv.ParseUint(rs485addrStr[0], 10, 8)
-	if err != nil {
-		return
-	}
+		rs485addrStr, ok := r.URL.Query()["rs485addr"]
+		if !ok || len(rs485addrStr[0]) < 1 {
+			return
+		}
+		rs485addr, err := strconv.ParseUint(rs485addrStr[0], 10, 8)
+		if err != nil {
+			return
+		}
 
-	fractionStr, ok := r.URL.Query()["fraction"]
-	if !ok || len(fractionStr[0]) < 1 {
+		fractionStr, ok := r.URL.Query()["fraction"]
+		if !ok || len(fractionStr[0]) < 1 {
+			return
+		}
+
+		log.Println("new fraction:", fractionStr[0])
+		store.SaveScale(int(id), int(dataPerfAddr), ipaddr[0], int(rs485addr), fractionStr[0])
+		reloadScales()
+		scales[id].Requests = 0
+		scales[id].Responses = 0
+
+		_, _ = w.Write([]byte("ok"))
 		return
+	} else {
+		idStr, ok := r.URL.Query()["id"]
+		if !ok {
+			return
+		}
+		id, err := strconv.ParseUint(idStr[0], 10, 8)
+		if err != nil {
+			return
+		}
+
+		fractionStr, ok := r.URL.Query()["fraction"]
+		if !ok || len(fractionStr[0]) < 1 {
+			return
+		}
+
+		store.SaveScaleFraction(int(id), fractionStr[0])
+		reloadScales()
+
+		_, _ = w.Write([]byte("ok"))
+
 	}
-
-	store.SaveScale(int(id), int(dataPerfAddr), ipaddr[0], int(rs485addr), fractionStr[0])
-	reloadScales()
-	scales[id].Requests = 0
-	scales[id].Responses = 0
-
-	_, _ = w.Write([]byte("ok"))
 }
 
 func ajaxClear(w http.ResponseWriter, r *http.Request) {
@@ -201,6 +226,9 @@ func reportH(w http.ResponseWriter, r *http.Request) {
 }
 
 func serve(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
+	w.Header().Set("Expires", time.Unix(0, 0).Format(http.TimeFormat))
+	w.Header().Set("Pragma", "no-cache")
 	if !loggined(r) {
 		loginH(w, r)
 		return
@@ -231,7 +259,6 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path != "/" {
-		log.Println("served file", r.URL.Path)
 		serveFile(w, r)
 		return
 	}
@@ -239,8 +266,7 @@ func serve(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveMain(w http.ResponseWriter, r *http.Request) {
-	if ip, err := getIP(r); err == nil && ip == "127.0.0.1" {
-		log.Println("served admin main")
+	if isLocalhost(r) {
 		http.ServeFile(w, r, "pkg/webui/www/admin.html")
 		return
 	}
@@ -270,6 +296,13 @@ func reloadScales() {
 		scales[i].IP = s[i].Ip
 		scales[i].Fraction = s[i].Fraction
 	}
+}
+
+func isLocalhost(r *http.Request) bool {
+	if ip, err := getIP(r); err == nil && ip == "127.0.0.1" {
+		return true
+	}
+	return false
 }
 
 func getIP(r *http.Request) (string, error) {
