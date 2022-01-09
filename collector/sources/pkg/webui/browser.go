@@ -71,6 +71,9 @@ func ajaxUpdate(w http.ResponseWriter) {
 }
 
 func ajaxSave(w http.ResponseWriter, r *http.Request) {
+	if isAccessChangeFraction(r) == false {
+		return
+	}
 	idStr, ok := r.URL.Query()["id"]
 	if !ok {
 		return
