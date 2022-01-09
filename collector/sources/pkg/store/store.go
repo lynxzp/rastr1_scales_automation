@@ -74,20 +74,6 @@ func SaveScale(id int, dataPerfAddr int, ip string, rs485addr int, fraction stri
 	}
 }
 
-func SaveScaleFraction(id int, fraction string) {
-	smt := "UPDATE scales SET fraction = ? WHERE id = ?"
-	res, err := db.Exec(smt, fraction, id)
-	if err != nil {
-		log.Println("WW can't save scales:", id, fraction, "with err:", err)
-		return
-	}
-	affected, err := res.RowsAffected()
-	if (err != nil) || (affected != 1) {
-		log.Println("WW problem saving scales, err:", err, "rows affected:", affected)
-		return
-	}
-}
-
 func ClearScale(id int) {
 	smt := "DELETE FROM scales WHERE id = ?"
 	res, err := db.Exec(smt, id)
@@ -131,6 +117,20 @@ func ReadScales() ([]Scale, error) {
 		scales[id].Fraction = fraction
 	}
 	return scales, nil
+}
+
+func SaveScaleFraction(scale int, fraction string) {
+	smt := "UPDATE scales SET fraction = ? WHERE id = ?"
+	res, err := db.Exec(smt, fraction, scale)
+	if err != nil {
+		log.Println("WW can't save scale fraction:", scale, fraction, "with err:", err)
+		return
+	}
+	affected, err := res.RowsAffected()
+	if (err != nil) || (affected != 1) {
+		log.Println("WW problem saving scale fraction, err:", err, "rows affected:", affected)
+		return
+	}
 }
 
 func SaveEvent(scale int, accumulation int, event string, shift int, fraction string) {
@@ -188,8 +188,8 @@ func PeriodicSave(scale int, accumulation int, event string, shift int, fraction
 	}
 	rows.Close()
 
-	smt = "DELETE FROM data WHERE datetime = ? AND scale = ? AND event = ?"
-	res, err := db.Exec(smt, dateTimeString, scale, event)
+	smt = "DELETE FROM data WHERE datetime = ? AND scale = ? AND event = ? AND fraction = ? AND shift = ?"
+	res, err := db.Exec(smt, dateTimeString, scale, event, fraction, shift)
 	if err != nil {
 		log.Println("WW can't delete double save:", scale, accumulation, event, shift, fraction, "with err:", err)
 		return
@@ -257,24 +257,16 @@ func exportBackgroundStruct(c chan DataRecord, scale int, start time.Time, finis
 	}
 }
 
-func ExportDataStructAnyTime(start time.Time, finish time.Time, shift int) chan DataRecord {
+func ExportDataStructAnyTime(start time.Time, finish time.Time) chan DataRecord {
 	ret := make(chan DataRecord)
-	go exportBackgroundStructAnyTime(ret, start, finish, shift)
+	go exportBackgroundStructAnyTime(ret, start, finish)
 	return ret
 }
 
-func exportBackgroundStructAnyTime(c chan DataRecord, start time.Time, finish time.Time, shift int) {
+func exportBackgroundStructAnyTime(c chan DataRecord, start time.Time, finish time.Time) {
 	defer close(c)
-	var smt string
-	var rows *sql.Rows
-	var err error
-	if shift == 0 {
-		smt = "SELECT * FROM data WHERE datetime > ? AND datetime < ?"
-		rows, err = db.Query(smt, start, finish)
-	} else {
-		smt = "SELECT * FROM data WHERE datetime > ? AND datetime < ? AND shift = ?"
-		rows, err = db.Query(smt, start, finish, shift)
-	}
+	smt := "SELECT * FROM data WHERE datetime > ? AND datetime < ?"
+	rows, err := db.Query(smt, start, finish)
 	if err != nil {
 		log.Println("WW can't load any data err:", err)
 		return

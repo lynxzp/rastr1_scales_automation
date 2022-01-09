@@ -3,6 +3,7 @@ package webui
 import (
 	"collector/pkg/config"
 	"collector/pkg/reports"
+	"collector/pkg/shift"
 	"collector/pkg/store"
 	"collector/pkg/ucma"
 	"encoding/json"
@@ -70,78 +71,86 @@ func ajaxUpdate(w http.ResponseWriter) {
 	_, _ = w.Write(js)
 }
 
-func ajaxSave(w http.ResponseWriter, r *http.Request) {
+func ajaxSaveFraction(w http.ResponseWriter, r *http.Request) {
 	if allowed, login := isAccessChangeFraction(r); allowed == false {
 		log.Println(login, "tried to change fraction")
 		return
 	}
-	if isLocalhost(r) {
-		idStr, ok := r.URL.Query()["id"]
-		if !ok {
-			return
-		}
-		id, err := strconv.ParseUint(idStr[0], 10, 8)
-		if err != nil {
-			return
-		}
-
-		dataPerfAddrStr, ok := r.URL.Query()["dtype"]
-		if !ok {
-			return
-		}
-		dataPerfAddr, err := strconv.ParseUint(dataPerfAddrStr[0], 16, 8)
-		if err != nil {
-			return
-		}
-
-		ipaddr, ok := r.URL.Query()["ipaddr"]
-		if !ok || len(ipaddr[0]) < 7 {
-			return
-		}
-
-		rs485addrStr, ok := r.URL.Query()["rs485addr"]
-		if !ok || len(rs485addrStr[0]) < 1 {
-			return
-		}
-		rs485addr, err := strconv.ParseUint(rs485addrStr[0], 10, 8)
-		if err != nil {
-			return
-		}
-
-		fractionStr, ok := r.URL.Query()["fraction"]
-		if !ok || len(fractionStr[0]) < 1 {
-			return
-		}
-
-		log.Println("new fraction:", fractionStr[0])
-		store.SaveScale(int(id), int(dataPerfAddr), ipaddr[0], int(rs485addr), fractionStr[0])
-		reloadScales()
-		scales[id].Requests = 0
-		scales[id].Responses = 0
-
-		_, _ = w.Write([]byte("ok"))
+	idStr, ok := r.URL.Query()["id"]
+	if !ok {
 		return
-	} else {
-		idStr, ok := r.URL.Query()["id"]
-		if !ok {
-			return
-		}
-		id, err := strconv.ParseUint(idStr[0], 10, 8)
-		if err != nil {
-			return
-		}
-
-		fractionStr, ok := r.URL.Query()["fraction"]
-		if !ok || len(fractionStr[0]) < 1 {
-			return
-		}
-
-		store.SaveScaleFraction(int(id), fractionStr[0])
-		reloadScales()
-
-		_, _ = w.Write([]byte("ok"))
-
 	}
+	id, err := strconv.ParseUint(idStr[0], 10, 8)
+	if err != nil {
+		return
+	}
+
+	fractionStr, ok := r.URL.Query()["fraction"]
+	if !ok || len(fractionStr[0]) < 1 {
+		return
+	}
+
+	store.SaveEvent(int(id), int(scales[id].DataAccumValue), "start", shift.GetCurrentShift(), fractionStr[0])
+	store.SaveScaleFraction(int(id), fractionStr[0])
+	reloadScales()
+
+	_, _ = w.Write([]byte("ok"))
+}
+
+func ajaxSaveScale(w http.ResponseWriter, r *http.Request) {
+	allowed, login := isAccessChangeFraction(r)
+	if allowed == false {
+		log.Println(login, "tried to change fraction")
+		return
+	}
+	if !isLocalhost(r) {
+		log.Println(login, "tried to change scales")
+		return
+	}
+	idStr, ok := r.URL.Query()["id"]
+	if !ok {
+		return
+	}
+	id, err := strconv.ParseUint(idStr[0], 10, 8)
+	if err != nil {
+		return
+	}
+
+	dataPerfAddrStr, ok := r.URL.Query()["dtype"]
+	if !ok {
+		return
+	}
+	dataPerfAddr, err := strconv.ParseUint(dataPerfAddrStr[0], 16, 8)
+	if err != nil {
+		return
+	}
+
+	ipaddr, ok := r.URL.Query()["ipaddr"]
+	if !ok || len(ipaddr[0]) < 7 {
+		return
+	}
+
+	rs485addrStr, ok := r.URL.Query()["rs485addr"]
+	if !ok || len(rs485addrStr[0]) < 1 {
+		return
+	}
+	rs485addr, err := strconv.ParseUint(rs485addrStr[0], 10, 8)
+	if err != nil {
+		return
+	}
+
+	fractionStr, ok := r.URL.Query()["fraction"]
+	if !ok || len(fractionStr[0]) < 1 {
+		return
+	}
+
+	log.Println("new scales config:", id, ipaddr[0], rs485addr, fractionStr[0])
+	store.SaveScale(int(id), int(dataPerfAddr), ipaddr[0], int(rs485addr), fractionStr[0])
+	reloadScales()
+	scales[id].Requests = 0
+	scales[id].Responses = 0
+
+	_, _ = w.Write([]byte("ok"))
 }
 
 func ajaxClear(w http.ResponseWriter, r *http.Request) {
@@ -237,8 +246,12 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		ajaxUpdate(w)
 		return
 	}
-	if r.URL.Path == "/save" {
-		ajaxSave(w, r)
+	if r.URL.Path == "/save_fraction" {
+		ajaxSaveFraction(w, r)
+		return
+	}
+	if r.URL.Path == "/save_scale" {
+		ajaxSaveScale(w, r)
 		return
 	}
 	if r.URL.Path == "/clear" {

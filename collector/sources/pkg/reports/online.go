@@ -15,9 +15,9 @@ func init() {
 func Count(start time.Time, end time.Time, shift int) map[string]int {
 	reading.Lock()
 	caps := make(map[string]int)
-	all := store.ExportDataStructAnyTime(start, end, shift)
+	all := store.ExportDataStructAnyTime(start, end)
 	for record := range all {
-		fr, sum := processRecord(record)
+		fr, sum := processRecord(record, shift)
 		if sum == 0 {
 			continue
 		}
@@ -28,35 +28,40 @@ func Count(start time.Time, end time.Time, shift int) map[string]int {
 }
 
 var (
-	prevRecordAccumulation map[string]int
-	reading                sync.Mutex
+	prevRecord map[string]store.DataRecord
+	reading    sync.Mutex
 )
 
 func init() {
-	prevRecordAccumulation = make(map[string]int)
+	prevRecord = make(map[string]store.DataRecord)
 }
 
-func processRecord(record store.DataRecord) (string, int) {
+func processRecord(record store.DataRecord, shift int) (fraction string, sum int) {
 	scaleStr := strconv.Itoa(record.Scale) /* + "_" + record.Fraction*/
 	if record.Event == "start" {
-		prevRecordAccumulation[scaleStr] = record.Accumulation
+		prevRecord[scaleStr] = record
 		return "", 0
 	}
 	if record.Event == "periodic" {
-		prev, ok := prevRecordAccumulation[scaleStr]
+		prev, ok := prevRecord[scaleStr]
 		if !ok {
-			prevRecordAccumulation[scaleStr] = record.Accumulation
+			prevRecord[scaleStr] = record
 			log.Println("WW periodic save without start", record)
 			return "", 0
 		}
-		sum := record.Accumulation - prev
+		sum = record.Accumulation - prev.Accumulation
 		if sum < 0 {
 			//todo: chek this
-			prevRecordAccumulation[scaleStr] = record.Accumulation
+			prevRecord[scaleStr] = record
 			//log.Println("WW the previous accumulation", prevRecordAccumulation[scaleStr], "is greater than the current one", record)
 			return "", 0
 		}
-		return scaleStr + "_" + record.Fraction, sum
+		if (shift == 0) || ((shift == record.Shift) && (shift == prev.Shift)) {
+			if record.Fraction == prev.Fraction {
+				return scaleStr + "_" + record.Fraction, sum
+			}
+		}
+		return "", 0
 	}
 	log.Println("WW unexpected record", record)
 	return "", 0

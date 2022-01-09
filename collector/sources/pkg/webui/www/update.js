@@ -96,6 +96,10 @@ function addrow(name, i) {
     d.value=fractions[0]
     rows.appendChild(d)
     document.getElementById('fraction'+i).getElementsByTagName("input")[0].value=fractions[0]
+    // Save Fraction
+    d = document.createElement("div");
+    d.innerHTML = '<input type="button" value="Сохранить" id="save'+i+'" onclick="saveFraction('+i+')">'
+    rows.appendChild(d)
     // DataAccumValue
     d = document.createElement("div");
     d.setAttribute('id', 'DataAccumValue'+i)
@@ -134,12 +138,10 @@ function addrow(name, i) {
         d = document.createElement("div");
         d.setAttribute('id', 'responses'+i)
         rows.appendChild(d)
-    }
-    // Save button
-    d = document.createElement("div");
-    d.innerHTML = '<input type="button" value="Сохранить" id="save'+i+'" onclick="saveClick('+i+')">'
-    rows.appendChild(d)
-    if(isLocalhost()) {
+        // Save button
+        d = document.createElement("div");
+        d.innerHTML = '<input type="button" value="Сохранить" id="save'+i+'" onclick="saveScale('+i+')">'
+        rows.appendChild(d)
         // Clear button
         d = document.createElement("div");
         d.innerHTML = '<input type="button" value="Очистить" id="clear' + i + '" onclick="clearClick(' + i + ')">'
@@ -190,14 +192,21 @@ function sendRequest(url, params, errorText) {
 
 }
 
-function saveClick(i) {
+function saveScale(i) {
     let params = "?id="+i
     if (isLocalhost()){
     params +="&dtype=" + document.getElementById("dtype"+i).getElementsByTagName("input")[0].value.slice(2,4)
     params += "&ipaddr=" + document.getElementById("ipaddr"+i).getElementsByTagName("input")[0].value
     params += "&rs485addr=" + document.getElementById("rs485addr"+i).getElementsByTagName("input")[0].value}
     params += "&fraction=" + document.getElementById("fraction"+i).getElementsByTagName("input")[0].value
-    sendRequest("save", params, "Ошибка сохранения")
+    sendRequest("save_scale", params, "Ошибка сохранения")
+    stopChanging = false
+}
+
+function saveFraction(i) {
+    let params = "?id="+i
+    params += "&fraction=" + document.getElementById("fraction" + i).getElementsByTagName("input")[0].value
+    sendRequest("save_fraction", params, "Ошибка сохранения")
     stopChanging = false
 }
 
