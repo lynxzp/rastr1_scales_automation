@@ -195,8 +195,6 @@ func reportH(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, _ = w.Write(resp)
-	//w.Write(jMap)
-	//w.Write([]byte("}"))
 }
 
 func serve(w http.ResponseWriter, r *http.Request) {
@@ -204,10 +202,6 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		loginH(w, r)
 		return
 	}
-	//if r.Method != "GET" {
-	//	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	//	return
-	//}
 	if r.URL.Path == "/ajax_update" {
 		ajaxUpdate(w)
 		return

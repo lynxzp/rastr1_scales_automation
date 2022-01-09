@@ -67,6 +67,23 @@ func loggined(r *http.Request) bool {
 	return false
 }
 
+func isAccessChangeFraction(r *http.Request) bool {
+	var login, password string
+	for _, c := range r.Cookies() {
+		if c.Name == "login" {
+			login = c.Value
+		}
+		if c.Name == "password" {
+			password = c.Value
+		}
+	}
+	if val, ok := config.Cfg.Users[login]; !ok || (val.Password != password) {
+		return false
+	}
+
+	return config.Cfg.Users[login].AccessChangeFraction
+}
+
 func redirectToMain(w http.ResponseWriter) {
 	_, _ = w.Write([]byte(`<html>
     <head>

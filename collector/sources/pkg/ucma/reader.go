@@ -25,7 +25,7 @@ type Ucma struct {
 	Responses      int32         `json:"responses"`
 	RequestDelay   time.Duration `json:"-"`
 	Id             int8          `json:"-"`
-	Fraction       string        `json:"-"`
+	Fraction       string        `json:"fraction"`
 	time           time.Time     `json:"-"`
 }
 

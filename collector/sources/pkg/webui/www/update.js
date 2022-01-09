@@ -32,6 +32,8 @@ function updateRequest() {
     httpUpdateRequest.send();
 }
 
+let stopChanging = false
+
 function updateResponse() {
     if (httpUpdateRequest.readyState === XMLHttpRequest.DONE) {
         if (httpUpdateRequest.status === 200) {
@@ -52,6 +54,9 @@ function updateResponse() {
                 }
                 if(DataAccumValue>=0) {
                     document.getElementById("DataAccumValue" + i).innerText = DataAccumValue
+                }
+                if ((params[i].fraction.length > 0) && (!stopChanging)) {
+                    document.getElementById("fraction" + i).childNodes[1].previousElementSibling.value = params[i].fraction
                 }
                 if(isLocalhost()){
                     document.getElementById("requests" + i).innerText = params[i].requests
@@ -85,7 +90,7 @@ function addrow(name, i) {
     let fractions_select = ''
     fractions.forEach((fr) => {fractions_select+='<option>'+fr+'</option>'})
     d.innerHTML = "<input type='text'>" +
-        "<select onchange='this.previousElementSibling.value=this.value; this.previousElementSibling.focus()' autofocus='true'>" +
+        "<select onchange='this.previousElementSibling.value=this.value; this.previousElementSibling.focus();stopChanging=true;' autofocus='true'>" +
         fractions_select + fractions[0] +
         "</select>\n"
     d.value=fractions[0]
@@ -192,19 +197,11 @@ function saveClick(i) {
     params += "&rs485addr=" + document.getElementById("rs485addr"+i).getElementsByTagName("input")[0].value
     params += "&fraction=" + document.getElementById("fraction"+i).getElementsByTagName("input")[0].value
     sendRequest("save", params, "Ошибка сохранения")
+    stopChanging = false
 }
 
 function clearClick(i) {
     sendRequest("clear", "?id="+i)
-}
-
-function delete_cookie( name, path, domain ) {
-    if( get_cookie( name ) ) {
-        document.cookie = name + "=" +
-            ((path) ? ";path="+path:"")+
-            ((domain)?";domain="+domain:"") +
-            ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    }
 }
 
 function logout() {
