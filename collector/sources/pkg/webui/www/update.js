@@ -53,12 +53,14 @@ function updateResponse() {
                 if(DataAccumValue>=0) {
                     document.getElementById("DataAccumValue" + i).innerText = DataAccumValue
                 }
-                document.getElementById("requests" + i).innerText = params[i].requests
-                document.getElementById("responses" + i).innerText = params[i].responses
-                if(firstLoad===true) {
-                    document.getElementById("rs485addr" + i).getElementsByTagName("input")[0].value = params[i].rs485addr
-                    document.getElementById("ipaddr"+i).getElementsByTagName("input")[0].value = params[i].ipaddr
-                    document.getElementById("dtype" + i).getElementsByTagName("input")[0].value = "0x" + parseInt(params[i].dtype).toString(16)
+                if(isLocalhost()){
+                    document.getElementById("requests" + i).innerText = params[i].requests
+                    document.getElementById("responses" + i).innerText = params[i].responses
+                    if(firstLoad===true) {
+                        document.getElementById("rs485addr" + i).getElementsByTagName("input")[0].value = params[i].rs485addr
+                        document.getElementById("ipaddr" + i).getElementsByTagName("input")[0].value = params[i].ipaddr
+                        document.getElementById("dtype" + i).getElementsByTagName("input")[0].value = "0x" + parseInt(params[i].dtype).toString(16)
+                    }
                 }
             }
             firstLoad = false
@@ -97,43 +99,47 @@ function addrow(name, i) {
     d = document.createElement("div");
     d.setAttribute('id', 'DataPerfValue'+i)
     rows.appendChild(d)
-    // type
-    d = document.createElement("div");
-    d.setAttribute('id', 'dtype'+i)
-    d.className+='dropdown'
-    d.innerHTML = "<input type='text' />" +
-                  "<select  onchange='this.previousElementSibling.value=this.value; this.previousElementSibling.focus()'>" +
-                  "<option>0x?? Свое значение</option>" +
-                  "<option>0x5d Производительность v2</option>" +
-                  "<option>0x3f Производительность v1</option>" + "sdsdsd" +
-                  "</select>"
-    rows.appendChild(d)
-    // ip address
-    d = document.createElement("div");
-    d.setAttribute('id', 'ipaddr'+i)
-    d.innerHTML = "<input type=\"text\" minlength=\"7\" maxlength=\"15\" size=\"15\" pattern=\"^((\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])$\">"
-    rows.appendChild(d)
-    // rs-485 address
-    d = document.createElement("div");
-    d.setAttribute('id', 'rs485addr'+i)
-    d.innerHTML = "<input type=\"text\" minlength=\"1\" maxlength=\"3\" size=\"3\" pattern=\"^\\d{1,3}$\">"
-    rows.appendChild(d)
-    // Requests
-    d = document.createElement("div");
-    d.setAttribute('id', 'requests'+i)
-    rows.appendChild(d)
-    // Responses
-    d = document.createElement("div");
-    d.setAttribute('id', 'responses'+i)
-    rows.appendChild(d)
+    if(isLocalhost()) {
+        // type
+        d = document.createElement("div");
+        d.setAttribute('id', 'dtype'+i)
+        d.className+='dropdown'
+        d.innerHTML = "<input type='text' />" +
+                      "<select  onchange='this.previousElementSibling.value=this.value; this.previousElementSibling.focus()'>" +
+                      "<option>0x?? Свое значение</option>" +
+                      "<option>0x5d Производительность v2</option>" +
+                      "<option>0x3f Производительность v1</option>" + "sdsdsd" +
+                      "</select>"
+        rows.appendChild(d)
+        // ip address
+        d = document.createElement("div");
+        d.setAttribute('id', 'ipaddr'+i)
+        d.innerHTML = "<input type=\"text\" minlength=\"7\" maxlength=\"15\" size=\"15\" pattern=\"^((\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])$\">"
+        rows.appendChild(d)
+        // rs-485 address
+        d = document.createElement("div");
+        d.setAttribute('id', 'rs485addr'+i)
+        d.innerHTML = "<input type=\"text\" minlength=\"1\" maxlength=\"3\" size=\"3\" pattern=\"^\\d{1,3}$\">"
+        rows.appendChild(d)
+        // Requests
+        d = document.createElement("div");
+        d.setAttribute('id', 'requests'+i)
+        rows.appendChild(d)
+        // Responses
+        d = document.createElement("div");
+        d.setAttribute('id', 'responses'+i)
+        rows.appendChild(d)
+    }
     // Save button
     d = document.createElement("div");
     d.innerHTML = '<input type="button" value="Сохранить" id="save'+i+'" onclick="saveClick('+i+')">'
     rows.appendChild(d)
-    // Clear button
-    d = document.createElement("div");
-    d.innerHTML = '<input type="button" value="Очистить" id="clear'+i+'" onclick="clearClick('+i+')">'
-    rows.appendChild(d)
+    if(isLocalhost()) {
+        // Clear button
+        d = document.createElement("div");
+        d.innerHTML = '<input type="button" value="Очистить" id="clear' + i + '" onclick="clearClick(' + i + ')">'
+        rows.appendChild(d)
+    }
 }
 
 function selectTab(tabName) {
@@ -205,4 +211,8 @@ function logout() {
     document.cookie = "password=; Max-Age=0"
     document.cookie = "login=; Max-Age=0"
     window.location.href = "/login.html"
+}
+
+function isLocalhost() {
+    return (location.hostname === "localhost" || location.hostname === "127.0.0.1")
 }

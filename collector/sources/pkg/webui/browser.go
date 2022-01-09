@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os/exec"
 	"runtime"
@@ -233,6 +234,7 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path != "/" {
+		log.Println("served file", r.URL.Path)
 		serveFile(w, r)
 		return
 	}
@@ -240,6 +242,11 @@ func serve(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveMain(w http.ResponseWriter, r *http.Request) {
+	if ip, err := getIP(r); err == nil && ip == "127.0.0.1" {
+		log.Println("served admin main")
+		http.ServeFile(w, r, "pkg/webui/www/admin.html")
+		return
+	}
 	http.ServeFile(w, r, "pkg/webui/www/index.html")
 }
 
@@ -266,4 +273,34 @@ func reloadScales() {
 		scales[i].IP = s[i].Ip
 		scales[i].Fraction = s[i].Fraction
 	}
+}
+
+func getIP(r *http.Request) (string, error) {
+	//Get IP from the X-REAL-IP header
+	ip := r.Header.Get("X-REAL-IP")
+	netIP := net.ParseIP(ip)
+	if netIP != nil {
+		return ip, nil
+	}
+
+	//Get IP from X-FORWARDED-FOR header
+	ips := r.Header.Get("X-FORWARDED-FOR")
+	splitIps := strings.Split(ips, ",")
+	for _, ip := range splitIps {
+		netIP := net.ParseIP(ip)
+		if netIP != nil {
+			return ip, nil
+		}
+	}
+
+	//Get IP from RemoteAddr
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return "", err
+	}
+	netIP = net.ParseIP(ip)
+	if netIP != nil {
+		return ip, nil
+	}
+	return "", fmt.Errorf("No valid ip found")
 }

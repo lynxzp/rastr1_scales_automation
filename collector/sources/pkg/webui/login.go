@@ -4,6 +4,7 @@ import (
 	"collector/pkg/config"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 func sendLoginForm(w http.ResponseWriter, r *http.Request, params string) {
@@ -11,6 +12,10 @@ func sendLoginForm(w http.ResponseWriter, r *http.Request, params string) {
 }
 
 func loginH(w http.ResponseWriter, r *http.Request) {
+	if loggined(r) {
+		redirectToMain(w)
+		return
+	}
 	if r.Method != "POST" {
 		sendLoginForm(w, r, "wrong=method")
 		return
@@ -31,21 +36,16 @@ func loginH(w http.ResponseWriter, r *http.Request) {
 			Name:  "password",
 			Value: password,
 		}
+		cookie3 := &http.Cookie{
+			Name:  "AccessChangeFraction",
+			Value: strconv.FormatBool(config.Cfg.Users[login].AccessChangeFraction),
+		}
 		http.SetCookie(w, cookie1)
 		http.SetCookie(w, cookie2)
+		http.SetCookie(w, cookie3)
 
-		w.Write([]byte(`<html>
-    <head>
-        <meta http-equiv="refresh" content="1;url=/" />
-    </head>
-    <body>
-        <h1>Вход успешен. Загрузка...</h1>
-    </body>
-</html>
-`))
-		//http.Redirect(w, r, "/", 200)
+		redirectToMain(w)
 		return
-		//serveMain(w, r)
 	}
 	sendLoginForm(w, r, "wrong=password")
 	return
@@ -65,4 +65,16 @@ func loggined(r *http.Request) bool {
 		return true
 	}
 	return false
+}
+
+func redirectToMain(w http.ResponseWriter) {
+	_, _ = w.Write([]byte(`<html>
+    <head>
+        <meta http-equiv="refresh" content="1;url=/" />
+    </head>
+    <body>
+        <h1>Вход успешен. Загрузка...</h1>
+    </body>
+</html>
+`))
 }

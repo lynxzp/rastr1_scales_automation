@@ -3,7 +3,7 @@ div {
 }
 .rows {
     display: grid;
-    grid-template-columns: max-content max-content max-content max-content min-content;
+    grid-template-columns: max-content max-content max-content max-content max-content max-content max-content max-content max-content min-content min-content;
     background: gainsboro;
 }
 .table {
