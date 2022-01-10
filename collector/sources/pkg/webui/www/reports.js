@@ -17,6 +17,11 @@ function refreshReports() {
     let yearstart  = new Date(monthStart.setMonth(0))
     let yearfinish = new Date(monthStart.setMonth(11))
     params.push({start:formatTime(yearstart), end:formatTime(yearfinish), shift: 0, column: "yearcol"})
+
+    periodStart = document.getElementById("periodFrom").value+":00"
+    periodEnd = document.getElementById("periodTo").value+":00"
+    params.push({start: periodStart, end: periodEnd, shift:0, column: "customcol"})
+    // console.log(params)
     reportRequest(params)
     // todo:
     // GetReport(todayStart, todayFinish, 0, "customcol")
@@ -64,11 +69,14 @@ function reportResponse() {
             document.getElementsByTagName("footer")[0].innerText=""
             try {
                 let params = JSON.parse(httpReportRequest.responseText)
-                for (let i = 0; i < 6; i++) {
+                console.log(params)
+                for (let i = 0; i < 7; i++) {
                     for (let j = 0; j < scfr.length; j++) {
-                        if (params[i].accumulation[scfr[j][0]] !== undefined) {
-                            document.getElementById(params[i].column + "_" + scfr[j][1]).innerText = params[i].accumulation[scfr[j][0]]
+                        let val = "-"
+                        if ((params[i] !== undefined) && (params[i].accumulation !== null) && (params[i].accumulation[scfr[j][0]] !== undefined)) {
+                            val = params[i].accumulation[scfr[j][0]]
                         }
+                        document.getElementById(params[i].column + "_" + scfr[j][1]).innerText = val
                     }
                 }
             } catch (e) {

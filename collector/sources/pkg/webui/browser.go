@@ -222,8 +222,7 @@ func reportH(w http.ResponseWriter, r *http.Request) {
 			log.Println(err.Error())
 			return
 		}
-		m := reports.Count(startTime, endTime, params[i].Shift)
-		params[i].Accumulation = m
+		params[i].Accumulation = reports.Count(startTime, endTime, params[i].Shift)
 	}
 
 	resp, err := json.Marshal(params)
