@@ -2,6 +2,7 @@ package store
 
 import (
 	"collector/pkg/config"
+	scales_naming_grouping "collector/pkg/scales-naming-grouping"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -226,7 +227,7 @@ func exportBackground(c chan string, s string) {
 			log.Println("WW", err)
 			return
 		}
-		c <- fmt.Sprintf("%d%s%d%s%s%s%d%s%s%s%s\r\n", scale, s, accumulation, s, event, s, shift, s, fraction, s, datetime)
+		c <- fmt.Sprintf("%s%s%d%s%s%s%d%s%s%s%s\r\n", scales_naming_grouping.Name[scale], s, accumulation, s, event, s, shift, s, fraction, s, datetime)
 	}
 }
 
