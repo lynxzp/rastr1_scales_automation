@@ -173,13 +173,10 @@ func ajaxClear(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("ok"))
 }
 
-func exportCVS(w http.ResponseWriter, r *http.Request) {
+func exportCSV(w http.ResponseWriter, r *http.Request) {
 	sepParam, ok := r.URL.Query()["separator"]
-	if !ok {
-		return
-	}
 	separator := ","
-	if sepParam[0] == ";" {
+	if ok && sepParam[0] == ";" {
 		separator = ";"
 	}
 	c := store.ExportData(separator)
@@ -284,7 +281,7 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/export" {
-		exportCVS(w, r)
+		exportCSV(w, r)
 		return
 	}
 	if r.URL.Path == "/report" {
