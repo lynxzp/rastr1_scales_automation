@@ -149,58 +149,55 @@ func SaveEvent(scale int, accumulation int, event string, shift int, fraction st
 }
 
 func PeriodicSave(scale int, accumulation int, event string, shift int, fraction string) {
-	SaveEvent(scale, accumulation, event, shift, fraction)
 
-	smt := "SELECT event, shift, fraction, datetime  FROM data WHERE scale = ? ORDER BY datetime DESC LIMIT 2"
+	smt := "SELECT event, shift, fraction, datetime FROM data WHERE date(datetime) = date('now','localtime') AND scale = ? ORDER BY datetime DESC LIMIT 1"
 	rows, err := db.Query(smt, scale)
 	if err != nil {
 		log.Println("WW can't load 2 last with err:", scale, err)
 		return
 	}
 	defer rows.Close()
-	var events string
-	var shifts int
-	var fractions string
-	var dateTimeString string
+	var eventDb string
+	var shiftDb int
+	var fractionDb string
+	var datetimeDb string
 
 	if rows.Next() == false {
-		log.Println("EE: this is impossible, no lines after writing into db")
+		SaveEvent(scale, accumulation, "start", shift, fraction)
 		return
 	}
-	err = rows.Scan(&events, &shifts, &fractions, &dateTimeString)
+
+	err = rows.Scan(&eventDb, &shiftDb, &fractionDb, &datetimeDb)
 	if err != nil {
 		log.Println("EE: read from db unexpected lines", err)
-		return
-	}
-	if (events != event) || (shifts != shift) || (fractions != fraction) {
-		return
-	}
-	if rows.Next() == false {
-		log.Println("WW: only 1 saved value for scale", scale, "?")
-		return
-	}
-	err = rows.Scan(&events, &shifts, &fractions, &dateTimeString)
-	if err != nil {
-		log.Println("EE: read from db unexpected lines")
-		return
-	}
-	if (events != event) || (shifts != shift) || (fractions != fraction) {
+		SaveEvent(scale, accumulation, "start", shift, fraction)
 		return
 	}
 	rows.Close()
 
-	smt = "DELETE FROM data WHERE datetime = ? AND scale = ? AND event = ? AND fraction = ? AND shift = ?"
-	res, err := db.Exec(smt, dateTimeString, scale, event, fraction, shift)
-	if err != nil {
-		log.Println("WW can't delete double save:", scale, accumulation, event, shift, fraction, "with err:", err)
+	if (eventDb == "start") && (shift == shiftDb) && (fraction == fractionDb) {
+		SaveEvent(scale, accumulation, event, shift, fraction)
 		return
 	}
-	affected, err := res.RowsAffected()
-	if (err != nil) || (affected != 1) {
-		log.Println("WW problem deleting double save, err:", err, "rows affected:", affected)
+	if (eventDb == event) && (shift == shiftDb) && (fraction == fractionDb) {
+		// delete and save new one
+		smt = "BEGIN TRANSACTION; " +
+			"DELETE FROM data WHERE datetime = ? AND scale = ? AND event = ? AND fraction = ? AND shift = ?; " +
+			"INSERT INTO data (scale, accumulation, event, shift, fraction, datetime) VALUES (?, ?, ?, ?, ?, datetime('now','localtime')); " +
+			"COMMIT;"
+		res, err := db.Exec(smt, datetimeDb, scale, eventDb, fractionDb, shiftDb, scale, accumulation, event, shift, fraction)
+		if err != nil {
+			log.Println("WW store: transaction failed:", err)
+			return
+		}
+		affected, err := res.RowsAffected()
+		if (err != nil) || (affected != 1) {
+			log.Println("WW problem deleting old value. Err:", err, "rows affected:", affected)
+		}
 		return
 	}
-
+	// something changed, need to start new save line
+	SaveEvent(scale, accumulation, "start", shift, fraction)
 }
 
 func ExportData(sep string) chan string {

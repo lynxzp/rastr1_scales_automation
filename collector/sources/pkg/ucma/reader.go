@@ -47,34 +47,37 @@ func (ucma *Ucma) connect() (err error) {
 }
 
 func (ucma *Ucma) request() {
+	ucma.requestSuccess(ucma.DataPerfAddr, &ucma.DataPerfValue)
+
 	firstRead := false
-	ucma.requestProxy(ucma.DataPerfAddr, &ucma.DataPerfValue)
 	if ucma.DataAccumValue == 0 {
 		firstRead = true
 	}
-	ucma.requestProxy(DataAccumAddr, &ucma.DataAccumValue)
+	res := ucma.requestSuccess(DataAccumAddr, &ucma.DataAccumValue)
 	if firstRead && (ucma.DataAccumValue != 0) {
 		ucma.startSave()
 	}
-	ucma.periodicSave()
+	if res {
+		ucma.periodicSave()
+	}
 }
 
-func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
+func (ucma *Ucma) requestSuccess(addr uint16, dataP *int32) bool {
 	if len(ucma.IP) == 0 {
-		return
+		return false
 	}
 	if ucma.Rs485addr == 0 {
-		return
+		return false
 	}
 	if ucma.DataPerfAddr == 0 {
-		return
+		return false
 	}
 	ucma.Requests++
 	var err error
 	ucma.conn, err = net.Dial("tcp", ucma.IP+":"+ucma.Port)
 	if err != nil {
 		log.Println("Can't connect to ", ucma.IP, ucma.Port)
-		return
+		return false
 	}
 	defer func() {
 		ucma.conn.Close()
@@ -85,6 +88,7 @@ func (ucma *Ucma) requestProxy(addr uint16, dataP *int32) {
 		ucma.Responses++
 		*dataP = data
 	}
+	return true
 }
 
 func (ucma *Ucma) modbusRequest(addr uint16) int32 {
