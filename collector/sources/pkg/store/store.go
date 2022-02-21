@@ -207,7 +207,6 @@ func ExportData(sep string) chan string {
 }
 
 func exportBackground(c chan string, s string) {
-	log.Println(s)
 	defer close(c)
 	smt := "SELECT * FROM data"
 	rows, err := db.Query(smt)

@@ -61,7 +61,7 @@ function reportRequest(struct) {
     httpReportRequest.send();
 }
 
-let scfr=[['0_песок(0-5)', 11], ['1_0*40', 0], ['1_0*70', 1], ['1_20*40', 2], ['1_20*70', 3] , ['2_5*10', 4], ['3_10*20', 5] ,['3_5*20', 6], ['4_песок(0-5)', 7], ['5_5*10', 8], ['6_10*20', 9], ['7_5*20', 10]]
+let scfr=[['0_песок(0-5)', 11], ['1_0*40', 0], ['1_0*70', 1], ['1_20*40', 2], ['1_20*70', 3] , ['2_5*10', 4], ['3_10*20', 5] ,['3_5*20', 6], ['4_песок(0-5)', 7], ['5_5*10', 8], ['6_10*20', 9], ['7_5*20', 10], ['8_песок(0-5)', 12], ['9_песок(0-5)', 13]]
 
 function reportResponse() {
     if (httpReportRequest.readyState === XMLHttpRequest.DONE) {
@@ -70,7 +70,7 @@ function reportResponse() {
             try {
                 let params = JSON.parse(httpReportRequest.responseText)
                 console.log(params)
-                for (let i = 0; i < 7; i++) {
+                for (let i = 0; i < 9; i++) {
                     for (let j = 0; j < scfr.length; j++) {
                         let val = "-"
                         if ((params[i] !== undefined) && (params[i].accumulation !== null) && (params[i].accumulation[scfr[j][0]] !== undefined)) {
