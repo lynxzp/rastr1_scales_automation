@@ -90,7 +90,7 @@ func ajaxSaveFraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	store.SaveEvent(int(id), int(scales[id].DataAccumValue), "start", shift.GetCurrentShift(), fractionStr[0])
+	store.SaveEvent(int(id), int(scales[id].DataAccumValue), "start", shift.GetCurrentShift(int8(id)), fractionStr[0])
 	store.SaveScaleFraction(int(id), fractionStr[0])
 	reloadScales()
 

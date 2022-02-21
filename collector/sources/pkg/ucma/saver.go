@@ -7,7 +7,7 @@ import (
 )
 
 func (ucma *Ucma) startSave() {
-	store.SaveEvent(int(ucma.Id), int(ucma.DataAccumValue), "start", shift.GetCurrentShift(), ucma.Fraction)
+	store.SaveEvent(int(ucma.Id), int(ucma.DataAccumValue), "start", shift.GetCurrentShift(ucma.Id), ucma.Fraction)
 	ucma.time = time.Now()
 }
 
@@ -18,6 +18,6 @@ func (ucma *Ucma) periodicSave() {
 	n := time.Now()
 	if ucma.time.Add(time.Second).Before(n) {
 		ucma.time = n
-		store.PeriodicSave(int(ucma.Id), int(ucma.DataAccumValue), "periodic", shift.GetCurrentShift(), ucma.Fraction)
+		store.PeriodicSave(int(ucma.Id), int(ucma.DataAccumValue), "periodic", shift.GetCurrentShift(ucma.Id), ucma.Fraction)
 	}
 }

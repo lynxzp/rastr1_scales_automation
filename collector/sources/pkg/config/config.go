@@ -16,7 +16,7 @@ type Configurable struct {
 	ListenPort int             `json:"listen_port"`
 	ListenIP   string          `json:"listen_ip"`
 	Users      map[string]User `json:"users"`
-	Shifts     []Shift         `json:"shifts"`
+	Shifts     [][]Shift       `json:"shifts"`
 }
 
 var Cfg Configurable

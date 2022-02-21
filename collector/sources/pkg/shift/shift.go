@@ -26,7 +26,7 @@ import (
 
 //}
 
-func GetCurrentShift() int {
+func GetCurrentShift(scaleNum int8) int {
 	//t := time.Now()
 	//if t.Before(t12) {
 	//	return 1
@@ -39,9 +39,9 @@ func GetCurrentShift() int {
 	//}
 	//return 0
 	t := time.Now()
-	for i := range config.Cfg.Shifts {
-		if t.AfterOrEqual(config.Cfg.Shifts[i].Start) && t.BeforeOrEqual(config.Cfg.Shifts[i].Finish) {
-			return config.Cfg.Shifts[i].Number
+	for i := range config.Cfg.Shifts[scaleNum] {
+		if t.AfterOrEqual(config.Cfg.Shifts[scaleNum][i].Start) && t.BeforeOrEqual(config.Cfg.Shifts[scaleNum][i].Finish) {
+			return config.Cfg.Shifts[scaleNum][i].Number
 		}
 	}
 	return 0
