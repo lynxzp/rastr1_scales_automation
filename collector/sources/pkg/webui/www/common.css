@@ -3,20 +3,32 @@ div {
 }
 .rows {
     display: grid;
-    grid-template-columns: max-content max-content min-content max-content max-content;
     background: gainsboro;
 }
+
 .table {
     grid-column-start: 1;
     grid-column-end: 9;
 }
-table, th, td {
-    border: 1px solid black;
+table{
     border-collapse: collapse;
+}
+th, td {
+    border: 1px solid black;
     margin: 5px;
     padding: 5px;
     background: antiquewhite;
 }
+.invisibleColumn{
+    border: none;
+    background-color: #fff;
+    /*border: 0px solid white;*/
+    /*border-collapse: collapse;*/
+    /*margin: 50px;*/
+    /*padding: 50px;*/
+    width: 50px;
+}
+
 button{
     font-family: monospace;
     font-weight: bold;

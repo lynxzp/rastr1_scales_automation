@@ -1,0 +1,3 @@
+.rows {
+    grid-template-columns: max-content max-content min-content max-content max-content;
+}

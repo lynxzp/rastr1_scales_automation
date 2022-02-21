@@ -3,7 +3,8 @@
 <head>
     <script src="update.js"></script>
     <script src="reports.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="user.css">
     <title>Collector</title>
 </head>
 <body>
@@ -26,8 +27,8 @@
 
     <div id="tseha" class="tabcontent">
         <p><h3>ДЦ-1</h3></p>
-        <table id="tseh1"><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='7'>Количество продукции</th></tr>
-        <tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th><th>Выбранный период</th></tr>
+        <table id="tseh1"><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='6'>Количество продукции</th><th rowspan="10" class="invisibleColumn"></th><th rowspan="2">Выбранный период</th></tr>
+        <tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th></tr>
         <tr><td>ЛК-6</td><td>      0*40</td><td id="todaycolshift1_0"  >-</td><td id="todaycolshift2_0" >-</td><td id="todaycolshift3_0" >-</td><td id="todaycol_0" >-</td><td id="monthcol_0" >-</td><td id="yearcol_0" >-</td><td id="customcol_0" >-</td></tr>
         <tr><td>ЛК-6</td><td>      0*70</td><td id="todaycolshift1_1"  >-</td><td id="todaycolshift2_1" >-</td><td id="todaycolshift3_1" >-</td><td id="todaycol_1" >-</td><td id="monthcol_1" >-</td><td id="yearcol_1" >-</td><td id="customcol_1" >-</td></tr>
         <tr><td>ЛК-6</td><td>     20*40</td><td id="todaycolshift1_2"  >-</td><td id="todaycolshift2_2" >-</td><td id="todaycolshift3_2" >-</td><td id="todaycol_2" >-</td><td id="monthcol_2" >-</td><td id="yearcol_2" >-</td><td id="customcol_2" >-</td></tr>
@@ -38,8 +39,8 @@
         <tr><td>ЛК-9</td><td>песок(0-5)</td><td id="todaycolshift1_7"  >-</td><td id="todaycolshift2_7" >-</td><td id="todaycolshift3_7" >-</td><td id="todaycol_7" >-</td><td id="monthcol_7" >-</td><td id="yearcol_7" >-</td><td id="customcol_7" >-</td></tr>
         </tbody></table>
         <p><h3>ДЦ-2</h3></p>
-        <table id="tseh2"><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='7'>Количество продукции</th></tr>
-        <tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th><th>Выбранный период</th></tr>
+        <table id="tseh2"><tbody><tr><th rowspan='2'>№ ЛК</th><th rowspan='2'>Фракция</th><th colspan='6'>Количество продукции</th><th rowspan="10" class="invisibleColumn"></th><th rowspan="2">Выбранный период</th></tr>
+        <tr><th>1 смена</th><th>2 смена</th><th>3 смена</th><th>За сутки</th><th>С начала месяца</th><th>С начала года</th></tr>
         <tr><td>ЛК-14</td><td>      5*10</td><td id="todaycolshift1_8" >-</td><td id="todaycolshift2_8" >-</td><td id="todaycolshift3_8" >-</td><td id="todaycol_8" >-</td><td id="monthcol_8" >-</td><td id="yearcol_8" >-</td><td id="customcol_8" >-</td></tr>
         <tr><td>ЛК-15</td><td>     10*20</td><td id="todaycolshift1_9" >-</td><td id="todaycolshift2_9" >-</td><td id="todaycolshift3_9" >-</td><td id="todaycol_9" >-</td><td id="monthcol_9" >-</td><td id="yearcol_9" >-</td><td id="customcol_9" >-</td></tr>
         <tr><td>ЛК-17</td><td>      5*20</td><td id="todaycolshift1_10">-</td><td id="todaycolshift2_10">-</td><td id="todaycolshift3_10">-</td><td id="todaycol_10">-</td><td id="monthcol_10">-</td><td id="yearcol_10">-</td><td id="customcol_10">-</td></tr>
@@ -47,7 +48,7 @@
         <tr><td>ЛК-X</td><td>песок(0-5)</td><td id="todaycolshift1_12"  >-</td><td id="todaycolshift2_12" >-</td><td id="todaycolshift3_12" >-</td><td id="todaycol_12" >-</td><td id="monthcol_12" >-</td><td id="yearcol_12" >-</td><td id="customcol_12" >-</td></tr>
         <tr><td>ЛК-Y</td><td>песок(0-5)</td><td id="todaycolshift1_13"  >-</td><td id="todaycolshift2_13" >-</td><td id="todaycolshift3_13" >-</td><td id="todaycol_13" >-</td><td id="monthcol_13" >-</td><td id="yearcol_13" >-</td><td id="customcol_13" >-</td></tr>
         </tbody></table>
-        <p><h3>Период для отчета</h3></p>
+        <p><h3 style="padding: 40px 0px 0px 0px">Период для отчета</h3></p>
         <p>C <input id="periodFrom" type="text" minlength="16" maxlength="16" size="11" value="31.12.2021 23:59">
             по <input id="periodTo"   type="text" minlength="16" maxlength="16" size="11" value="31.12.2031 00:00"></p>
     </div>
